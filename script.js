@@ -1,14 +1,11 @@
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("✅ script.js chargé (identifiant participant)");
-
-  // ====== CONFIG ======
   const BACKEND_URL = "https://gpt-backend-kodi.onrender.com/chat";
 
-  // ====== ELEMENTS UI ======
   const welcomeScreen = document.getElementById("welcome-screen");
   const chatScreen = document.getElementById("chat-screen");
 
   const participantInput = document.getElementById("participant-id");
+  const bgUrlInput = document.getElementById("bg-url");
   const acceptBtn = document.getElementById("accept-btn");
   const welcomeError = document.getElementById("welcome-error");
 
@@ -21,21 +18,21 @@ document.addEventListener("DOMContentLoaded", () => {
   const sendBtn = document.getElementById("send-button");
   const clearBtn = document.getElementById("clear-chat");
   const changeIdBtn = document.getElementById("change-id");
+  const changeBgBtn = document.getElementById("change-bg");
 
-  if (!welcomeScreen || !chatScreen || !participantInput || !acceptBtn) {
-    console.error("❌ Éléments de l'écran de bienvenue introuvables.");
-    return;
-  }
-  if (!messagesEl || !formEl || !inputEl || !sendBtn) {
-    console.error("❌ Éléments du chat introuvables.");
-    return;
-  }
+  const appBg = document.getElementById("app-bg");
 
-  // ====== STORAGE KEYS ======
   const PARTICIPANT_KEY = "pv_participant_id";
+  const BG_KEY = "pv_bg_url";
 
-  // On stocke l’historique par participant :
-  // pv_chat_history_P001, pv_chat_history_P002, etc.
+  function normalizeParticipantId(raw) {
+    return String(raw || "").trim().toUpperCase().replace(/\s+/g, "");
+  }
+
+  function isValidParticipantId(pid) {
+    return /^[A-Z0-9_-]{2,40}$/.test(pid);
+  }
+
   function historyKeyFor(participantId) {
     return `pv_chat_history_${participantId}`;
   }
@@ -44,24 +41,25 @@ document.addEventListener("DOMContentLoaded", () => {
     if (statusPill) statusPill.textContent = text;
   }
 
-  function normalizeParticipantId(raw) {
-    // 1) trim
-    // 2) majuscules
-    // 3) enlève espaces internes
-    const s = String(raw || "").trim().toUpperCase().replace(/\s+/g, "");
-    return s;
-  }
-
-  function isValidParticipantId(pid) {
-    // Ajuste si tu veux : ici on accepte lettres/chiffres/_/-
-    // Longueur min 2
-    return /^[A-Z0-9_-]{2,40}$/.test(pid);
+  function setBackground(url) {
+    const u = String(url || "").trim();
+    if (!appBg) return;
+    if (!u) {
+      appBg.style.backgroundImage = "";
+      return;
+    }
+    appBg.style.backgroundImage = `url("${u.replace(/"/g, "%22")}")`;
   }
 
   function showWelcome(errorText = "") {
     welcomeScreen.hidden = false;
     chatScreen.hidden = true;
     welcomeError.textContent = errorText;
+
+    const savedBg = localStorage.getItem(BG_KEY) || "";
+    if (bgUrlInput) bgUrlInput.value = savedBg;
+
+    setBackground(savedBg);
     participantInput.focus();
   }
 
@@ -75,7 +73,13 @@ document.addEventListener("DOMContentLoaded", () => {
   function addMessageToUI(text, role) {
     const div = document.createElement("div");
     div.classList.add("message");
-    div.classList.add(role === "user" ? "user-message" : role === "bot" ? "bot-message" : "system-message");
+    div.classList.add(
+      role === "user"
+        ? "user-message"
+        : role === "bot"
+        ? "bot-message"
+        : "system-message"
+    );
     div.textContent = String(text ?? "");
     messagesEl.appendChild(div);
     messagesEl.scrollTop = messagesEl.scrollHeight;
@@ -88,8 +92,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!raw) return [];
       const parsed = JSON.parse(raw);
       return Array.isArray(parsed) ? parsed : [];
-    } catch (e) {
-      console.error("❌ Erreur lecture historique:", e);
+    } catch {
       return [];
     }
   }
@@ -97,9 +100,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function saveHistory(participantId, history) {
     try {
       localStorage.setItem(historyKeyFor(participantId), JSON.stringify(history));
-    } catch (e) {
-      console.error("❌ Erreur sauvegarde historique:", e);
-    }
+    } catch {}
   }
 
   function renderHistory(history) {
@@ -121,16 +122,22 @@ document.addEventListener("DOMContentLoaded", () => {
       const txt = await res.text().catch(() => "");
       throw new Error(`HTTP ${res.status} ${res.statusText} ${txt}`);
     }
-    return res.json(); // { reply }
+    return res.json();
   }
 
-  // ====== STATE ======
   let participantId = localStorage.getItem(PARTICIPANT_KEY);
   let history = [];
 
   function initChatForParticipant(pid) {
     participantId = pid;
     localStorage.setItem(PARTICIPANT_KEY, participantId);
+
+    const bg =
+      (bgUrlInput ? bgUrlInput.value : "").trim() ||
+      (localStorage.getItem(BG_KEY) || "");
+
+    localStorage.setItem(BG_KEY, bg);
+    setBackground(bg);
 
     history = loadHistory(participantId);
 
@@ -148,22 +155,22 @@ document.addEventListener("DOMContentLoaded", () => {
     showChat(participantId);
   }
 
-  // ====== BOOT ======
+  const savedBg = localStorage.getItem(BG_KEY) || "";
+  setBackground(savedBg);
+
   if (participantId && isValidParticipantId(participantId)) {
+    if (bgUrlInput) bgUrlInput.value = savedBg;
     initChatForParticipant(participantId);
   } else {
     showWelcome("");
   }
 
-  // ====== WELCOME FLOW ======
   acceptBtn.addEventListener("click", () => {
     const pid = normalizeParticipantId(participantInput.value);
-
     if (!isValidParticipantId(pid)) {
-      showWelcome("Identifiant invalide. Utilisez un code du type P001 (lettres/chiffres, sans nom/courriel).");
+      showWelcome("Identifiant invalide. Utilisez un code du type P001 (lettres/chiffres, sans espaces, sans nom/courriel).");
       return;
     }
-
     initChatForParticipant(pid);
   });
 
@@ -174,7 +181,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // ====== CHAT FLOW ======
+  if (bgUrlInput) {
+    bgUrlInput.addEventListener("input", () => {
+      setBackground(bgUrlInput.value);
+    });
+  }
+
   formEl.addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -204,8 +216,7 @@ document.addEventListener("DOMContentLoaded", () => {
       saveHistory(participantId, history);
 
       setStatus("Prêt");
-    } catch (err) {
-      console.error("❌ erreur fetch:", err);
+    } catch {
       typingBubble.textContent = "Erreur: impossible de joindre le serveur.";
 
       history.push({ role: "system", text: "Erreur: impossible de joindre le serveur.", ts: new Date().toISOString() });
@@ -219,28 +230,45 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // ====== BUTTONS ======
-  if (clearBtn) {
-    clearBtn.addEventListener("click", () => {
-      history = [
-        {
-          role: "bot",
-          text: "Conversation effacée. Recommencez quand vous voulez.",
-          ts: new Date().toISOString()
-        }
-      ];
-      saveHistory(participantId, history);
-      renderHistory(history);
-      setStatus("Prêt");
-      inputEl.focus();
-    });
-  }
+  clearBtn.addEventListener("click", () => {
+    history = [
+      {
+        role: "bot",
+        text: "Conversation effacée. Recommencez quand vous voulez.",
+        ts: new Date().toISOString()
+      }
+    ];
+    saveHistory(participantId, history);
+    renderHistory(history);
+    setStatus("Prêt");
+    inputEl.focus();
+  });
 
-  if (changeIdBtn) {
-    changeIdBtn.addEventListener("click", () => {
-      // Option: ne pas supprimer les historiques, juste permettre de choisir un autre ID
-      participantInput.value = participantId || "";
-      showWelcome("Entrez un autre identifiant pour continuer (les historiques restent enregistrés par ID).");
-    });
-  }
+  changeIdBtn.addEventListener("click", () => {
+    participantInput.value = participantId || "";
+    if (bgUrlInput) bgUrlInput.value = localStorage.getItem(BG_KEY) || "";
+    showWelcome("Entrez un autre identifiant pour continuer.");
+  });
+
+  changeBgBtn.addEventListener("click", () => {
+    participantInput.value = participantId || "";
+    if (bgUrlInput) bgUrlInput.value = localStorage.getItem(BG_KEY) || "";
+    showWelcome("");
+  });
+
+  messagesEl.addEventListener(
+    "wheel",
+    (e) => {
+      const canScroll = messagesEl.scrollHeight > messagesEl.clientHeight;
+      if (!canScroll) return;
+
+      const atTop = messagesEl.scrollTop <= 0;
+      const atBottom = messagesEl.scrollTop + messagesEl.clientHeight >= messagesEl.scrollHeight - 1;
+
+      if ((e.deltaY < 0 && !atTop) || (e.deltaY > 0 && !atBottom)) {
+        e.stopPropagation();
+      }
+    },
+    { passive: true }
+  );
 });
