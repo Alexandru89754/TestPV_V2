@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Patient virtuel – Chat</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-bg" id="app-bg"></div>
+
+  <div class="app-shell">
+    <div class="app-card">
+      <section class="chat" id="chat-screen">
+        <header class="chat-header">
+          <div class="chat-header__left">
+            <div class="chat-title">
+              <div class="chat-title__main">Patient virtuel</div>
+              <div class="chat-title__sub" id="participant-pill">Participant: —</div>
+            </div>
+          </div>
+
+          <div class="chat-header__right">
+            <div class="pill" id="status-pill">Prêt</div>
+          </div>
+        </header>
+
+        <main class="chat-messages" id="chat-messages" aria-live="polite"></main>
+
+        <form class="chat-input-area" id="chat-form" action="javascript:void(0);">
+          <input
+            type="text"
+            class="chat-input"
+            id="chat-input"
+            placeholder="Écrivez votre message…"
+            autocomplete="off"
+          />
+          <button type="submit" class="btn btn-primary" id="send-button">Envoyer</button>
+        </form>
+
+        <footer class="chat-footer">
+          <button class="btn btn-ghost" id="clear-chat" type="button">Effacer la conversation</button>
+          <button class="btn btn-ghost" id="change-id" type="button">Changer d’identifiant</button>
+        </footer>
+      </section>
+    </div>
+  </div>
+
+  <script src="chat.js"></script>
+</body>
+</html>
