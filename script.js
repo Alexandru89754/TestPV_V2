@@ -53,18 +53,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function showWelcome(errorText = "") {
     setBackground(BG_WELCOME);
-    welcomeScreen.hidden = false;
-    chatScreen.hidden = true;
-    welcomeError.textContent = errorText;
-    participantInput.focus();
+    if (welcomeScreen) welcomeScreen.hidden = false;
+    if (chatScreen) chatScreen.hidden = true;
+    if (welcomeError) welcomeError.textContent = errorText;
+    if (participantInput) participantInput.focus();
   }
 
   function showChat(participantId) {
     setBackground(BG_CHAT);
-    welcomeScreen.hidden = true;
-    chatScreen.hidden = false;
-    participantPill.textContent = `Participant: ${participantId}`;
-    inputEl.focus();
+    if (welcomeScreen) welcomeScreen.hidden = true;
+    if (chatScreen) chatScreen.hidden = false;
+    if (participantPill) participantPill.textContent = `Participant: ${participantId}`;
+    if (inputEl) inputEl.focus();
   }
 
   function addMessageToUI(text, role) {
@@ -122,7 +122,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return res.json();
   }
 
-  let participantId = localStorage.getItem(PARTICIPANT_KEY);
+  let participantId = null;
   let history = [];
 
   function initChatForParticipant(pid) {
@@ -166,6 +166,11 @@ document.addEventListener("DOMContentLoaded", () => {
   formEl.addEventListener("submit", async (e) => {
     e.preventDefault();
 
+    if (!participantId) {
+      showWelcome("Entrez un identifiant pour commencer.");
+      return;
+    }
+
     const text = inputEl.value.trim();
     if (!text) return;
 
@@ -207,6 +212,8 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   clearBtn.addEventListener("click", () => {
+    if (!participantId) return;
+
     history = [
       {
         role: "bot",
@@ -221,8 +228,10 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   changeIdBtn.addEventListener("click", () => {
-    participantInput.value = participantId || "";
-    showWelcome("Entrez un autre identifiant pour continuer.");
+    participantId = null;
+    history = [];
+    if (participantInput) participantInput.value = "";
+    showWelcome("");
   });
 
   messagesEl.addEventListener(
