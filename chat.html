@@ -20,7 +20,9 @@
             </div>
           </div>
 
-          <div class="chat-header__right">
+          <div class="chat-header__right" style="display:flex; gap:10px; align-items:center;">
+            <button class="btn btn-ghost" id="cam-start" type="button">Démarrer vidéo</button>
+            <button class="btn btn-ghost" id="cam-stop" type="button" disabled>Arrêter & envoyer</button>
             <div class="pill" id="status-pill">Prêt</div>
           </div>
         </header>
@@ -28,13 +30,7 @@
         <main class="chat-messages" id="chat-messages" aria-live="polite"></main>
 
         <form class="chat-input-area" id="chat-form" action="javascript:void(0);">
-          <input
-            type="text"
-            class="chat-input"
-            id="chat-input"
-            placeholder="Écrivez votre message…"
-            autocomplete="off"
-          />
+          <input type="text" class="chat-input" id="chat-input" placeholder="Écrivez votre message…" autocomplete="off" />
           <button type="submit" class="btn btn-primary" id="send-button">Envoyer</button>
         </form>
 
