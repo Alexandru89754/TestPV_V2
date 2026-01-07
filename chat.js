@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
   const BACKEND_URL = "https://gpt-backend-kodi.onrender.com/chat";
 
-  const BG_CHAT = "TestPV_V2/asset/image intérieur.png";
+  const BG_CHAT = "TestPV_V2/asset/image_in.png";
   const PARTICIPANT_KEY = "pv_participant_id";
 
   const appBg = document.getElementById("app-bg");
