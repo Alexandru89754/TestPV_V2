@@ -48,7 +48,6 @@ body{
 .chat-header__title h1{
   font-size: 1.05rem;
   font-weight: 700;
-  letter-spacing: 0.2px;
 }
 
 .chat-header__title p{
