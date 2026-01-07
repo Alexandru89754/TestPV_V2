@@ -1,4 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
+  console.log("✅ script.js chargé");
+
   const messagesEl = document.getElementById("chat-messages");
   const formEl = document.getElementById("chat-form");
   const inputEl = document.getElementById("chat-input");
@@ -6,9 +8,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const clearBtn = document.getElementById("clear-chat");
   const statusPill = document.getElementById("status-pill");
 
-  // 🔴 1) REMPLACE PAR L’URL DE TON BACKEND (Render/Railway/etc.) + /chat
-  // Exemple: "https://pv-backend.onrender.com/chat"
-  const BACKEND_URL = "https://gpt-backend-kodi.onrender.com";
+  if (!messagesEl || !formEl || !inputEl || !sendBtn) {
+    console.error("❌ Éléments introuvables. Vérifie les IDs dans index.html.");
+    return;
+  }
+
+  const BACKEND_URL = "https://gpt-backend-kodi.onrender.com/chat";
 
   const USER_ID = localStorage.getItem("pv_userId") || crypto.randomUUID();
   localStorage.setItem("pv_userId", USER_ID);
@@ -38,11 +43,13 @@ document.addEventListener("DOMContentLoaded", () => {
       const txt = await res.text().catch(() => "");
       throw new Error(`HTTP ${res.status} ${res.statusText} ${txt}`);
     }
-    return res.json(); // { reply: "..." }
+
+    return res.json();
   }
 
   formEl.addEventListener("submit", async (e) => {
     e.preventDefault();
+    console.log("✅ submit intercepté");
 
     const text = inputEl.value.trim();
     if (!text) return;
@@ -62,8 +69,8 @@ document.addEventListener("DOMContentLoaded", () => {
       typing.textContent = data.reply || "Erreur: réponse vide.";
       setStatus("Prêt");
     } catch (err) {
-      typing.textContent = "Erreur: impossible de joindre le serveur (URL/CORS).";
-      console.error(err);
+      typing.textContent = "Erreur: serveur inaccessible (CORS/URL).";
+      console.error("❌ erreur fetch:", err);
       setStatus("Erreur");
     } finally {
       sendBtn.disabled = false;
@@ -75,4 +82,10 @@ document.addEventListener("DOMContentLoaded", () => {
   if (clearBtn) {
     clearBtn.addEventListener("click", () => {
       messagesEl.innerHTML = `<div class="message bot-message">Conversation effacée. Recommencez quand vous voulez.</div>`;
-      s
+      setStatus("Prêt");
+      inputEl.focus();
+    });
+  }
+
+  setStatus("Prêt");
+});
