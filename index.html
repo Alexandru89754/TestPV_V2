@@ -46,7 +46,7 @@
             </p>
           </div>
 
-          <div class="form-grid">
+          <div class="form-grid single">
             <div class="field">
               <label class="field-label" for="participant-id">Identifiant participant</label>
               <input
@@ -58,18 +58,6 @@
                 maxlength="40"
               />
               <div class="field-hint" id="id-hint">Lettres/chiffres, sans espaces, sans nom/courriel.</div>
-            </div>
-
-            <div class="field">
-              <label class="field-label" for="bg-url">Image de fond (optionnel)</label>
-              <input
-                class="field-input"
-                id="bg-url"
-                type="url"
-                placeholder="URL d’image (ex: https://...)"
-                autocomplete="off"
-              />
-              <div class="field-hint">L’image est enregistrée sur cet appareil (localStorage).</div>
             </div>
           </div>
 
@@ -117,7 +105,6 @@
         <footer class="chat-footer">
           <button class="btn btn-ghost" id="clear-chat" type="button">Effacer la conversation</button>
           <button class="btn btn-ghost" id="change-id" type="button">Changer d’identifiant</button>
-          <button class="btn btn-ghost" id="change-bg" type="button">Changer l’image de fond</button>
         </footer>
       </section>
 
