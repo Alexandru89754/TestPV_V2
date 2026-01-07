@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Patient virtuel – Chatbot</title>
+
+  <!-- Lien vers le CSS -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="chat-container">
+
+    <!-- En-tête -->
+    <header class="chat-header">
+      <h1>Patient virtuel</h1>
+      <p>Simulation d’entretien clinique</p>
+    </header>
+
+    <!-- Zone des messages -->
+    <main class="chat-messages" id="chat-messages">
+
+      <!-- Message du bot (exemple) -->
+      <div class="message bot-message">
+        Bonjour, je suis votre patient aujourd’hui. Que souhaitez-vous savoir ?
+      </div>
+
+      <!-- Message utilisateur (exemple) -->
+      <div class="message user-message">
+        Bonjour, pouvez-vous me décrire votre douleur ?
+      </div>
+
+    </main>
+
+    <!-- Zone d’entrée -->
+    <form class="chat-input-area">
+      <input
+        type="text"
+        class="chat-input"
+        placeholder="Écrivez votre question ici..."
+        autocomplete="off"
+      />
+      <button type="submit" class="send-button">
+        Envoyer
+      </button>
+    </form>
+
+  </div>
+
+  <!-- JS (vide pour l’instant) -->
+  <script src="script.js"></script>
+</body>
+</html>
