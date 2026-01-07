@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const BG_WELCOME = "assets/image extérieur.png";
+  const BG_WELCOME = "TestPV_V2/asset/image extérieur.png";
   const PARTICIPANT_KEY = "pv_participant_id";
 
   const appBg = document.getElementById("app-bg");
@@ -8,10 +8,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const welcomeError = document.getElementById("welcome-error");
 
   function setBackground(url) {
-    const u = String(url || "").trim();
     if (!appBg) return;
-    if (!u) { appBg.style.backgroundImage = ""; return; }
-    appBg.style.backgroundImage = `url("${encodeURI(u)}")`;
+    appBg.style.backgroundImage = `url("${encodeURI(url)}")`;
   }
 
   function normalizeParticipantId(raw) {
@@ -28,8 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const pid = normalizeParticipantId(participantInput.value);
 
     if (!isValidParticipantId(pid)) {
-      welcomeError.textContent = "Identifiant invalide. Utilisez un code du type P001 (lettres/chiffres, sans espaces, sans nom/courriel).";
-      participantInput.focus();
+      welcomeError.textContent = "Identifiant invalide (ex: P001).";
       return;
     }
 
@@ -38,9 +35,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   participantInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      acceptBtn.click();
-    }
+    if (e.key === "Enter") acceptBtn.click();
   });
 });
