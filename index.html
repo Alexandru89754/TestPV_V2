@@ -3,44 +3,91 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Patient virtuel – Chat</title>
+  <title>Patient virtuel – Projet de recherche</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="chat-container">
 
-    <header class="chat-header">
-      <div class="chat-header__title">
-        <h1>Patient virtuel</h1>
-        <p>Simulation d’entretien clinique</p>
+    <!-- ===== ÉCRAN BIENVENUE / IDENTIFIANT ===== -->
+    <section class="welcome" id="welcome-screen">
+      <div class="welcome-card">
+        <h1>Bienvenue</h1>
+        <p class="welcome-subtitle">
+          Vous allez interagir avec un <strong>patient virtuel</strong> (LLM) dans le cadre d’un projet de recherche.
+        </p>
+
+        <div class="welcome-box">
+          <h2>Rôle de l’outil</h2>
+          <ul>
+            <li>Simuler un patient pour pratiquer l’anamnèse / communication clinique.</li>
+            <li>Répondre comme un patient, selon les informations fournies.</li>
+            <li>Ne remplace pas un avis médical réel.</li>
+          </ul>
+        </div>
+
+        <div class="welcome-box">
+          <h2>Confidentialité</h2>
+          <p>
+            N’entrez pas d’informations personnelles identifiables (nom, courriel, téléphone, adresse).
+            Utilisez uniquement un identifiant de participant (ex. <strong>P001</strong>).
+          </p>
+        </div>
+
+        <label class="field-label" for="participant-id">Identifiant participant</label>
+        <input
+          class="field-input"
+          id="participant-id"
+          type="text"
+          placeholder="Ex: P001"
+          autocomplete="off"
+          maxlength="40"
+        />
+        <p class="field-hint" id="id-hint">
+          Utilisez un code fourni par l’équipe (ex: P001). Pas de nom/courriel.
+        </p>
+
+        <div class="welcome-actions">
+          <button class="primary-button" id="accept-btn" type="button">
+            Accepter et commencer
+          </button>
+        </div>
+
+        <p class="small-muted" id="welcome-error" aria-live="polite"></p>
       </div>
-      <div class="chat-header__status" id="status-pill">Prêt</div>
-    </header>
+    </section>
 
-    <main class="chat-messages" id="chat-messages" aria-live="polite">
-      <div class="message bot-message">
-        Bonjour. Je suis votre patient virtuel. Comment puis-je vous aider aujourd’hui ?
-      </div>
-    </main>
+    <!-- ===== ÉCRAN CHAT ===== -->
+    <section class="chat" id="chat-screen" hidden>
+      <header class="chat-header">
+        <div class="chat-header__title">
+          <h1>Patient virtuel</h1>
+          <p id="participant-pill">Participant: —</p>
+        </div>
+        <div class="chat-header__status" id="status-pill">Prêt</div>
+      </header>
 
-    <form class="chat-input-area" id="chat-form" action="javascript:void(0);">
-      <input
-        type="text"
-        class="chat-input"
-        id="chat-input"
-        placeholder="Écrivez votre message…"
-        autocomplete="off"
-      />
-      <button type="submit" class="send-button" id="send-button">Envoyer</button>
-    </form>
+      <main class="chat-messages" id="chat-messages" aria-live="polite"></main>
 
-    <footer class="chat-footer">
-      <button class="link-button" id="clear-chat" type="button">Effacer la conversation</button>
-    </footer>
+      <form class="chat-input-area" id="chat-form" action="javascript:void(0);">
+        <input
+          type="text"
+          class="chat-input"
+          id="chat-input"
+          placeholder="Écrivez votre message…"
+          autocomplete="off"
+        />
+        <button type="submit" class="send-button" id="send-button">Envoyer</button>
+      </form>
+
+      <footer class="chat-footer">
+        <button class="link-button" id="clear-chat" type="button">Effacer la conversation</button>
+        <button class="link-button" id="change-id" type="button">Changer d’identifiant</button>
+      </footer>
+    </section>
 
   </div>
 
-  <!-- IMPORTANT: le fichier script.js doit être dans le repo public -->
   <script src="script.js"></script>
 </body>
 </html>
