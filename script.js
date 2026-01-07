@@ -1,11 +1,13 @@
 document.addEventListener("DOMContentLoaded", () => {
   const BACKEND_URL = "https://gpt-backend-kodi.onrender.com/chat";
 
+  const BG_WELCOME = "assets/image extérieur.png";
+  const BG_CHAT = "assets/image intérieur.png";
+
   const welcomeScreen = document.getElementById("welcome-screen");
   const chatScreen = document.getElementById("chat-screen");
 
   const participantInput = document.getElementById("participant-id");
-  const bgUrlInput = document.getElementById("bg-url");
   const acceptBtn = document.getElementById("accept-btn");
   const welcomeError = document.getElementById("welcome-error");
 
@@ -18,24 +20,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const sendBtn = document.getElementById("send-button");
   const clearBtn = document.getElementById("clear-chat");
   const changeIdBtn = document.getElementById("change-id");
-  const changeBgBtn = document.getElementById("change-bg");
 
   const appBg = document.getElementById("app-bg");
 
   const PARTICIPANT_KEY = "pv_participant_id";
-  const BG_KEY = "pv_bg_url";
-
-  function normalizeParticipantId(raw) {
-    return String(raw || "").trim().toUpperCase().replace(/\s+/g, "");
-  }
-
-  function isValidParticipantId(pid) {
-    return /^[A-Z0-9_-]{2,40}$/.test(pid);
-  }
-
-  function historyKeyFor(participantId) {
-    return `pv_chat_history_${participantId}`;
-  }
 
   function setStatus(text) {
     if (statusPill) statusPill.textContent = text;
@@ -51,19 +39,28 @@ document.addEventListener("DOMContentLoaded", () => {
     appBg.style.backgroundImage = `url("${u.replace(/"/g, "%22")}")`;
   }
 
+  function normalizeParticipantId(raw) {
+    return String(raw || "").trim().toUpperCase().replace(/\s+/g, "");
+  }
+
+  function isValidParticipantId(pid) {
+    return /^[A-Z0-9_-]{2,40}$/.test(pid);
+  }
+
+  function historyKeyFor(participantId) {
+    return `pv_chat_history_${participantId}`;
+  }
+
   function showWelcome(errorText = "") {
+    setBackground(BG_WELCOME);
     welcomeScreen.hidden = false;
     chatScreen.hidden = true;
     welcomeError.textContent = errorText;
-
-    const savedBg = localStorage.getItem(BG_KEY) || "";
-    if (bgUrlInput) bgUrlInput.value = savedBg;
-
-    setBackground(savedBg);
     participantInput.focus();
   }
 
   function showChat(participantId) {
+    setBackground(BG_CHAT);
     welcomeScreen.hidden = true;
     chatScreen.hidden = false;
     participantPill.textContent = `Participant: ${participantId}`;
@@ -132,13 +129,6 @@ document.addEventListener("DOMContentLoaded", () => {
     participantId = pid;
     localStorage.setItem(PARTICIPANT_KEY, participantId);
 
-    const bg =
-      (bgUrlInput ? bgUrlInput.value : "").trim() ||
-      (localStorage.getItem(BG_KEY) || "");
-
-    localStorage.setItem(BG_KEY, bg);
-    setBackground(bg);
-
     history = loadHistory(participantId);
 
     if (history.length === 0) {
@@ -155,15 +145,7 @@ document.addEventListener("DOMContentLoaded", () => {
     showChat(participantId);
   }
 
-  const savedBg = localStorage.getItem(BG_KEY) || "";
-  setBackground(savedBg);
-
-  if (participantId && isValidParticipantId(participantId)) {
-    if (bgUrlInput) bgUrlInput.value = savedBg;
-    initChatForParticipant(participantId);
-  } else {
-    showWelcome("");
-  }
+  showWelcome("");
 
   acceptBtn.addEventListener("click", () => {
     const pid = normalizeParticipantId(participantInput.value);
@@ -180,12 +162,6 @@ document.addEventListener("DOMContentLoaded", () => {
       acceptBtn.click();
     }
   });
-
-  if (bgUrlInput) {
-    bgUrlInput.addEventListener("input", () => {
-      setBackground(bgUrlInput.value);
-    });
-  }
 
   formEl.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -246,14 +222,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   changeIdBtn.addEventListener("click", () => {
     participantInput.value = participantId || "";
-    if (bgUrlInput) bgUrlInput.value = localStorage.getItem(BG_KEY) || "";
     showWelcome("Entrez un autre identifiant pour continuer.");
-  });
-
-  changeBgBtn.addEventListener("click", () => {
-    participantInput.value = participantId || "";
-    if (bgUrlInput) bgUrlInput.value = localStorage.getItem(BG_KEY) || "";
-    showWelcome("");
   });
 
   messagesEl.addEventListener(
