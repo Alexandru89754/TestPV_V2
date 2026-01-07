@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const BG_WELCOME = "TestPV_V2/asset/image extérieur.png";
+  const BG_WELCOME = "TestPV_V2/asset/image_out.png";
   const PARTICIPANT_KEY = "pv_participant_id";
 
   const appBg = document.getElementById("app-bg");
