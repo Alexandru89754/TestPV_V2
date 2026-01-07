@@ -1,11 +1,11 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const BACKEND_URL = "https://gpt-backend-kodi.onrender.com/chat";
+  const BACKEND_CHAT_URL = "https://gpt-backend-kodi.onrender.com/chat";
+  const BACKEND_UPLOAD_URL = "https://gpt-backend-kodi.onrender.com/upload-video";
 
   const BG_CHAT = "./asset/image_in.png";
   const PARTICIPANT_KEY = "pv_participant_id";
 
   const appBg = document.getElementById("app-bg");
-
   const participantPill = document.getElementById("participant-pill");
   const statusPill = document.getElementById("status-pill");
 
@@ -15,6 +15,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const sendBtn = document.getElementById("send-button");
   const clearBtn = document.getElementById("clear-chat");
   const changeIdBtn = document.getElementById("change-id");
+
+  const camStartBtn = document.getElementById("cam-start");
+  const camStopBtn = document.getElementById("cam-stop");
 
   function setBackground(url) {
     if (!appBg) return;
@@ -32,10 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function addMessageToUI(text, role) {
     const div = document.createElement("div");
     div.classList.add("message");
-    div.classList.add(
-      role === "user" ? "user-message" :
-      role === "bot" ? "bot-message" : "system-message"
-    );
+    div.classList.add(role === "user" ? "user-message" : role === "bot" ? "bot-message" : "system-message");
     div.textContent = String(text ?? "");
     messagesEl.appendChild(div);
     messagesEl.scrollTop = messagesEl.scrollHeight;
@@ -66,16 +66,13 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function sendToBackend(message, participantId) {
-    const res = await fetch(BACKEND_URL, {
+    const res = await fetch(BACKEND_CHAT_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message, userId: participantId })
     });
 
-    if (!res.ok) {
-      const txt = await res.text().catch(() => "");
-      throw new Error(`HTTP ${res.status} ${res.statusText} ${txt}`);
-    }
+    if (!res.ok) throw new Error("chat http error");
     return res.json();
   }
 
@@ -131,10 +128,8 @@ document.addEventListener("DOMContentLoaded", () => {
       setStatus("Prêt");
     } catch {
       typingBubble.textContent = "Erreur: impossible de joindre le serveur.";
-
       history.push({ role: "system", text: "Erreur: impossible de joindre le serveur.", ts: new Date().toISOString() });
       saveHistory(participantId, history);
-
       setStatus("Erreur");
     } finally {
       sendBtn.disabled = false;
@@ -144,18 +139,113 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   clearBtn.addEventListener("click", () => {
-    history = [
-      { role: "bot", text: "Conversation effacée. Recommencez quand vous voulez.", ts: new Date().toISOString() }
-    ];
+    history = [{ role: "bot", text: "Conversation effacée. Recommencez quand vous voulez.", ts: new Date().toISOString() }];
     saveHistory(participantId, history);
     renderHistory(history);
     setStatus("Prêt");
-    inputEl.focus();
   });
 
   changeIdBtn.addEventListener("click", () => {
     localStorage.removeItem(PARTICIPANT_KEY);
     window.location.href = "index.html";
+  });
+
+  /* ===== CAMERA (facultatif, sans audio) ===== */
+
+  let stream = null;
+  let recorder = null;
+  let chunks = [];
+
+  camStartBtn.addEventListener("click", async () => {
+    try {
+      setStatus("Caméra…");
+
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { width: { ideal: 1280 }, height: { ideal: 720 } },
+        audio: false
+      });
+
+      const mimeCandidates = ["video/webm;codecs=vp9", "video/webm;codecs=vp8", "video/webm"];
+      let mimeType = "";
+      for (const m of mimeCandidates) {
+        if (window.MediaRecorder && MediaRecorder.isTypeSupported(m)) { mimeType = m; break; }
+      }
+
+      chunks = [];
+      recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+
+      recorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) chunks.push(e.data);
+      };
+
+      recorder.onstart = () => {
+        camStartBtn.disabled = true;
+        camStopBtn.disabled = false;
+        setStatus("Enregistrement");
+        addMessageToUI("Caméra activée (sans audio).", "system");
+      };
+
+      recorder.onstop = async () => {
+        try {
+          setStatus("Upload…");
+
+          const blob = new Blob(chunks, { type: recorder.mimeType || "video/webm" });
+          const file = new File([blob], "recording.webm", { type: blob.type });
+
+          const fd = new FormData();
+          fd.append("userId", participantId);
+          fd.append("video", file);
+
+          const res = await fetch(BACKEND_UPLOAD_URL, { method: "POST", body: fd });
+          const data = await res.json().catch(() => ({}));
+
+          if (!res.ok || !data.ok) {
+            setStatus("Erreur upload");
+            addMessageToUI("Vidéo: erreur d’envoi. Mode texte disponible.", "system");
+          } else {
+            setStatus("Upload OK");
+            addMessageToUI("Vidéo envoyée. Mode texte disponible.", "system");
+          }
+        } catch {
+          setStatus("Erreur upload");
+          addMessageToUI("Vidéo: erreur d’envoi. Mode texte disponible.", "system");
+        } finally {
+          camStartBtn.disabled = false;
+          camStopBtn.disabled = true;
+
+          if (stream) {
+            stream.getTracks().forEach(t => t.stop());
+            stream = null;
+          }
+          recorder = null;
+          chunks = [];
+
+          setTimeout(() => setStatus("Prêt"), 1000);
+        }
+      };
+
+      recorder.start(1000);
+    } catch {
+      setStatus("Caméra refusée");
+      addMessageToUI("Caméra refusée. Mode texte seulement.", "system");
+      camStartBtn.disabled = false;
+      camStopBtn.disabled = true;
+      if (stream) {
+        stream.getTracks().forEach(t => t.stop());
+        stream = null;
+      }
+    }
+  });
+
+  camStopBtn.addEventListener("click", () => {
+    try {
+      if (recorder && recorder.state !== "inactive") recorder.stop();
+    } catch {
+      setStatus("Erreur caméra");
+      addMessageToUI("Erreur caméra. Mode texte seulement.", "system");
+      camStartBtn.disabled = false;
+      camStopBtn.disabled = true;
+    }
   });
 
   messagesEl.addEventListener(
