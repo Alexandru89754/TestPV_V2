@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const BG_WELCOME = "TestPV_V2/asset/image_out.png";
+  const BG_WELCOME = "./asset/image_out.png";
   const PARTICIPANT_KEY = "pv_participant_id";
 
   const appBg = document.getElementById("app-bg");
@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function setBackground(url) {
     if (!appBg) return;
-    appBg.style.backgroundImage = `url("${encodeURI(url)}")`;
+    appBg.style.backgroundImage = `url("${url}")`;
   }
 
   function normalizeParticipantId(raw) {
@@ -27,6 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!isValidParticipantId(pid)) {
       welcomeError.textContent = "Identifiant invalide (ex: P001).";
+      participantInput.focus();
       return;
     }
 
@@ -35,6 +36,9 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   participantInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") acceptBtn.click();
+    if (e.key === "Enter") {
+      e.preventDefault();
+      acceptBtn.click();
+    }
   });
 });
