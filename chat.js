@@ -72,7 +72,10 @@ document.addEventListener("DOMContentLoaded", () => {
       body: JSON.stringify({ message, userId: participantId })
     });
 
-    if (!res.ok) throw new Error("chat http error");
+    if (!res.ok) {
+      const t = await res.text().catch(() => "");
+      throw new Error(`chat http ${res.status} ${t}`);
+    }
     return res.json();
   }
 
@@ -126,9 +129,10 @@ document.addEventListener("DOMContentLoaded", () => {
       saveHistory(participantId, history);
 
       setStatus("Prêt");
-    } catch {
-      typingBubble.textContent = "Erreur: impossible de joindre le serveur.";
-      history.push({ role: "system", text: "Erreur: impossible de joindre le serveur.", ts: new Date().toISOString() });
+    } catch (err) {
+      typingBubble.textContent = "Erreur: serveur inaccessible.";
+      addMessageToUI(String(err), "system");
+      history.push({ role: "system", text: "Erreur: serveur inaccessible.", ts: new Date().toISOString() });
       saveHistory(participantId, history);
       setStatus("Erreur");
     } finally {
@@ -150,18 +154,30 @@ document.addEventListener("DOMContentLoaded", () => {
     window.location.href = "index.html";
   });
 
-  /* ===== CAMERA (facultatif, sans audio) ===== */
+  /* =========================
+     CAMERA (facultatif)
+     IMPORTANT:
+     - Le popup caméra apparaît uniquement quand tu cliques "Démarrer vidéo"
+     - Sur GitHub Pages (HTTPS), ça marche.
+     ========================= */
 
   let stream = null;
   let recorder = null;
   let chunks = [];
+
+  function stopTracks() {
+    if (stream) {
+      stream.getTracks().forEach(t => t.stop());
+      stream = null;
+    }
+  }
 
   camStartBtn.addEventListener("click", async () => {
     try {
       setStatus("Caméra…");
 
       stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: { ideal: 1280 }, height: { ideal: 720 } },
+        video: true,
         audio: false
       });
 
@@ -204,7 +220,7 @@ document.addEventListener("DOMContentLoaded", () => {
             addMessageToUI("Vidéo: erreur d’envoi. Mode texte disponible.", "system");
           } else {
             setStatus("Upload OK");
-            addMessageToUI("Vidéo envoyée. Mode texte disponible.", "system");
+            addMessageToUI(`Vidéo envoyée. Path: ${data.path}`, "system");
           }
         } catch {
           setStatus("Erreur upload");
@@ -212,28 +228,20 @@ document.addEventListener("DOMContentLoaded", () => {
         } finally {
           camStartBtn.disabled = false;
           camStopBtn.disabled = true;
-
-          if (stream) {
-            stream.getTracks().forEach(t => t.stop());
-            stream = null;
-          }
+          stopTracks();
           recorder = null;
           chunks = [];
-
           setTimeout(() => setStatus("Prêt"), 1000);
         }
       };
 
       recorder.start(1000);
-    } catch {
+    } catch (e) {
       setStatus("Caméra refusée");
       addMessageToUI("Caméra refusée. Mode texte seulement.", "system");
       camStartBtn.disabled = false;
       camStopBtn.disabled = true;
-      if (stream) {
-        stream.getTracks().forEach(t => t.stop());
-        stream = null;
-      }
+      stopTracks();
     }
   });
 
@@ -245,20 +253,7 @@ document.addEventListener("DOMContentLoaded", () => {
       addMessageToUI("Erreur caméra. Mode texte seulement.", "system");
       camStartBtn.disabled = false;
       camStopBtn.disabled = true;
+      stopTracks();
     }
   });
-
-  messagesEl.addEventListener(
-    "wheel",
-    (e) => {
-      const canScroll = messagesEl.scrollHeight > messagesEl.clientHeight;
-      if (!canScroll) return;
-
-      const atTop = messagesEl.scrollTop <= 0;
-      const atBottom = messagesEl.scrollTop + messagesEl.clientHeight >= messagesEl.scrollHeight - 1;
-
-      if ((e.deltaY < 0 && !atTop) || (e.deltaY > 0 && !atBottom)) e.stopPropagation();
-    },
-    { passive: true }
-  );
 });
