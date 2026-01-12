@@ -1,22 +1,11 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // -------------------------
-  // CONFIG (depuis config.js)
-  // -------------------------
-  const CFG = window.__PV_CONFIG__ || {};
-  const API_BASE_URL = String(CFG.API_BASE_URL || "").replace(/\/+$/, "");
-  const CHAT_PATH = String(CFG.CHAT_PATH || "/chat");
-  const UPLOAD_VIDEO_PATH = String(CFG.UPLOAD_VIDEO_PATH || "/upload-video");
-  const PARTICIPANT_KEY = String(CFG.PARTICIPANT_KEY || "pv_participant_id");
-  const TOKEN_KEY = String(CFG.TOKEN_KEY || "pv_access_token");
+  const CFG = window.CONFIG || {};
 
-  // URLs finales
-  const BACKEND_CHAT_URL = `${API_BASE_URL}${CHAT_PATH}`;
-  const BACKEND_UPLOAD_URL = `${API_BASE_URL}${UPLOAD_VIDEO_PATH}`;
+  const BACKEND_CHAT_URL = CFG.CHAT_URL || (CFG.API_BASE_URL ? `${CFG.API_BASE_URL.replace(/\/+$/, "")}/chat` : "");
+  const BACKEND_UPLOAD_URL = CFG.UPLOAD_URL || (CFG.API_BASE_URL ? `${CFG.API_BASE_URL.replace(/\/+$/, "")}/upload-video` : "");
 
-  // -------------------------
-  // UI constants
-  // -------------------------
-  const BG_CHAT = "./asset/image_in.png";
+  const BG_CHAT = CFG.BG_CHAT || "./asset/image_in.png";
+  const PARTICIPANT_KEY = CFG.PARTICIPANT_KEY || "pv_participant_id";
 
   const appBg = document.getElementById("app-bg");
   const participantPill = document.getElementById("participant-pill");
@@ -48,9 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function addMessageToUI(text, role) {
     const div = document.createElement("div");
     div.classList.add("message");
-    div.classList.add(
-      role === "user" ? "user-message" : role === "bot" ? "bot-message" : "system-message"
-    );
+    div.classList.add(role === "user" ? "user-message" : role === "bot" ? "bot-message" : "system-message");
     div.textContent = String(text ?? "");
     messagesEl.appendChild(div);
     messagesEl.scrollTop = messagesEl.scrollHeight;
@@ -80,53 +67,22 @@ document.addEventListener("DOMContentLoaded", () => {
     messagesEl.scrollTop = messagesEl.scrollHeight;
   }
 
-  function getToken() {
-    return (localStorage.getItem(TOKEN_KEY) || "").trim();
-  }
-
-  function authHeaders() {
-    const token = getToken();
-    if (!token) return {};
-    return { Authorization: `Bearer ${token}` };
-  }
-
-  async function safeReadJson(res) {
-    try {
-      return await res.json();
-    } catch {
-      return null;
-    }
-  }
-
   async function sendToBackend(message, participantId) {
+    if (!BACKEND_CHAT_URL) throw new Error("BACKEND_CHAT_URL non défini dans config.js");
+
     const res = await fetch(BACKEND_CHAT_URL, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...authHeaders(),
-      },
-      body: JSON.stringify({ message, userId: participantId }),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message, userId: participantId })
     });
 
     if (!res.ok) {
-      const data = await safeReadJson(res);
-      const detail =
-        (data && (data.detail || data.message || data.error)) ||
-        (await res.text().catch(() => "")) ||
-        "";
-      const err = new Error(`chat http ${res.status} ${detail}`.trim());
-      err.status = res.status;
-      err.detail = detail;
-      throw err;
+      const t = await res.text().catch(() => "");
+      throw new Error(`chat http ${res.status} ${t}`);
     }
-
-    const data = await res.json();
-    return data;
+    return res.json();
   }
 
-  // -------------------------
-  // Participant gating
-  // -------------------------
   const participantId = localStorage.getItem(PARTICIPANT_KEY);
   if (!participantId) {
     window.location.href = "index.html";
@@ -142,15 +98,12 @@ document.addEventListener("DOMContentLoaded", () => {
     history.push({
       role: "bot",
       text: "Bonjour. Je suis votre patient virtuel. Quelle est votre principale raison de consultation aujourd’hui ?",
-      ts: new Date().toISOString(),
+      ts: new Date().toISOString()
     });
     saveHistory(participantId, history);
   }
   renderHistory(history);
 
-  // -------------------------
-  // Chat submit
-  // -------------------------
   formEl.addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -172,11 +125,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       const data = await sendToBackend(text, participantId);
-
-      // Ton backend historique renvoyait data.reply.
-      // On supporte aussi data.answer / data.message au cas où.
-      const reply =
-        (data && (data.reply || data.answer || data.message)) || "Erreur: réponse vide.";
+      const reply = data.reply || "Erreur: réponse vide.";
 
       typingBubble.textContent = reply;
 
@@ -185,35 +134,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
       setStatus("Prêt");
     } catch (err) {
-      const status = err && err.status ? Number(err.status) : 0;
-
-      if (status === 401) {
-        typingBubble.textContent = "Erreur: accès refusé (non connecté).";
-        addMessageToUI(
-          "Le backend exige un token Bearer, mais aucun token valide n’a été fourni.",
-          "system"
-        );
-        setStatus("401");
-      } else if (status === 422) {
-        typingBubble.textContent = "Erreur: requête invalide (422).";
-        addMessageToUI("Vérifie le JSON envoyé (email/password/message).", "system");
-        setStatus("422");
-      } else if (status >= 500) {
-        typingBubble.textContent = "Erreur: serveur (500).";
-        addMessageToUI("Le backend a planté. Vérifie les logs Render.", "system");
-        setStatus("500");
-      } else {
-        typingBubble.textContent = "Erreur: serveur inaccessible.";
-        addMessageToUI(String(err?.message || err), "system");
-        setStatus("Erreur");
-      }
-
-      history.push({
-        role: "system",
-        text: "Erreur: impossible d’obtenir une réponse.",
-        ts: new Date().toISOString(),
-      });
+      typingBubble.textContent = "Erreur: serveur inaccessible.";
+      addMessageToUI(String(err), "system");
+      history.push({ role: "system", text: "Erreur: serveur inaccessible.", ts: new Date().toISOString() });
       saveHistory(participantId, history);
+      setStatus("Erreur");
     } finally {
       sendBtn.disabled = false;
       inputEl.disabled = false;
@@ -221,13 +146,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // -------------------------
-  // Clear + Change ID
-  // -------------------------
   clearBtn.addEventListener("click", () => {
-    history = [
-      { role: "bot", text: "Conversation effacée. Recommencez quand vous voulez.", ts: new Date().toISOString() },
-    ];
+    history = [{ role: "bot", text: "Conversation effacée. Recommencez quand vous voulez.", ts: new Date().toISOString() }];
     saveHistory(participantId, history);
     renderHistory(history);
     setStatus("Prêt");
@@ -238,9 +158,9 @@ document.addEventListener("DOMContentLoaded", () => {
     window.location.href = "index.html";
   });
 
-  /* =========================
-     CAMERA (facultatif)
-     ========================= */
+  // =========================
+  // CAMERA (facultatif)
+  // =========================
 
   let stream = null;
   let recorder = null;
@@ -248,7 +168,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function stopTracks() {
     if (stream) {
-      stream.getTracks().forEach((t) => t.stop());
+      stream.getTracks().forEach(t => t.stop());
       stream = null;
     }
   }
@@ -259,16 +179,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
       stream = await navigator.mediaDevices.getUserMedia({
         video: true,
-        audio: false,
+        audio: false
       });
 
       const mimeCandidates = ["video/webm;codecs=vp9", "video/webm;codecs=vp8", "video/webm"];
       let mimeType = "";
       for (const m of mimeCandidates) {
-        if (window.MediaRecorder && MediaRecorder.isTypeSupported(m)) {
-          mimeType = m;
-          break;
-        }
+        if (window.MediaRecorder && MediaRecorder.isTypeSupported(m)) { mimeType = m; break; }
       }
 
       chunks = [];
@@ -289,6 +206,8 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
           setStatus("Upload…");
 
+          if (!BACKEND_UPLOAD_URL) throw new Error("BACKEND_UPLOAD_URL non défini dans config.js");
+
           const blob = new Blob(chunks, { type: recorder.mimeType || "video/webm" });
           const file = new File([blob], "recording.webm", { type: blob.type });
 
@@ -296,30 +215,20 @@ document.addEventListener("DOMContentLoaded", () => {
           fd.append("userId", participantId);
           fd.append("video", file);
 
-          const res = await fetch(BACKEND_UPLOAD_URL, {
-            method: "POST",
-            headers: {
-              ...authHeaders(),
-            },
-            body: fd,
-          });
+          const res = await fetch(BACKEND_UPLOAD_URL, { method: "POST", body: fd });
+          const data = await res.json().catch(() => ({}));
 
-          const data = await safeReadJson(res);
-
-          if (!res.ok) {
+          if (!res.ok || !data.ok) {
             setStatus("Erreur upload");
             addMessageToUI("Vidéo: erreur d’envoi. Mode texte disponible.", "system");
-          } else if (data && data.ok === false) {
-            setStatus("Erreur upload");
-            addMessageToUI("Vidéo: backend a refusé le fichier. Mode texte disponible.", "system");
           } else {
             setStatus("Upload OK");
-            const path = data && data.path ? data.path : "(ok)";
-            addMessageToUI(`Vidéo envoyée. Path: ${path}`, "system");
+            addMessageToUI(`Vidéo envoyée. Path: ${data.path}`, "system");
           }
-        } catch {
+        } catch (e) {
           setStatus("Erreur upload");
           addMessageToUI("Vidéo: erreur d’envoi. Mode texte disponible.", "system");
+          addMessageToUI(String(e), "system");
         } finally {
           camStartBtn.disabled = false;
           camStopBtn.disabled = true;
