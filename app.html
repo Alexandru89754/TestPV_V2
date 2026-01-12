@@ -156,11 +156,13 @@
       <button class="nav-btn" data-target="forum">Forum</button>
     </div>
 
-    <!-- SECTIONS -->
+    <!-- AMIS -->
     <section id="friends" class="section">
       <h1>Amis</h1>
+      <p>Fonctionnalité à venir.</p>
     </section>
 
+    <!-- CHAT -->
     <section id="chat" class="section">
       <h1>Chat_bot_Beta</h1>
 
@@ -177,12 +179,45 @@
       </div>
     </section>
 
+    <!-- PROJETS -->
     <section id="projects" class="section">
       <h1>Projets</h1>
+      <p>Section projets à venir.</p>
     </section>
 
+    <!-- FORUM -->
     <section id="forum" class="section">
       <h1>Forum</h1>
+
+      <div style="display:flex; gap:30px">
+
+        <!-- LISTE DES POSTS -->
+        <div style="width:40%">
+          <h3>Posts</h3>
+          <div id="posts-list"></div>
+        </div>
+
+        <!-- COMMENTAIRES -->
+        <div style="width:60%">
+          <h3>Commentaires</h3>
+          <div id="comments-list"></div>
+
+          <textarea
+            id="comment-input"
+            placeholder="Écris une réponse…"
+            style="width:100%;margin-top:10px;height:80px"
+          ></textarea>
+
+          <button
+            id="send-comment"
+            class="btn primary"
+            style="margin-top:10px"
+          >
+            Répondre
+          </button>
+        </div>
+
+      </div>
     </section>
 
   </div>
