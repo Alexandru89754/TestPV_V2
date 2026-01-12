@@ -1,147 +1,135 @@
-:root {
-  --accent: #4f8cff;
-  --accent-soft: rgba(79,140,255,0.35);
-  --text-main: rgba(255,255,255,0.95);
-  --text-muted: rgba(255,255,255,0.75);
-  --danger: #ff6b6b;
-  --glass: rgba(255,255,255,0.14);
-  --border: rgba(255,255,255,0.25);
-  --radius: 18px;
-  --shadow: 0 30px 80px rgba(0,0,0,0.35);
-  --font: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+/* RESET */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-* { box-sizing: border-box; }
-html, body { height: 100%; margin: 0; font-family: var(--font); }
-
-/* BACKGROUND */
-.bg {
+/* BACKGROUND IMAGE */
+.auth-bg {
   position: fixed;
   inset: 0;
   background-image: url("./asset/image_out.png");
   background-size: cover;
   background-position: center;
-  filter: blur(6px);
-  transform: scale(1.04);
-  opacity: 0.65;
   z-index: -2;
 }
-.bg::after {
-  content: "";
-  position: absolute;
+
+/* DARK / BLUE OVERLAY */
+.auth-overlay {
+  position: fixed;
   inset: 0;
-  background:
-    linear-gradient(
-      180deg,
-      rgba(79,140,255,0.55),
-      rgba(255,255,255,0.15)
-    );
+  background: linear-gradient(
+    to bottom,
+    rgba(10, 30, 60, 0.75),
+    rgba(245, 248, 255, 0.75)
+  );
+  z-index: -1;
 }
 
-/* WELCOME */
-.welcome-page {
-  height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.welcome-center {
-  text-align: center;
-  padding: 40px;
-}
-.welcome-title {
-  font-size: 42px;
-  font-weight: 900;
-  margin-bottom: 12px;
-}
-.welcome-text {
-  font-size: 18px;
-  color: var(--text-muted);
-  margin-bottom: 40px;
-}
-
-/* LOGIN PAGE */
-.login-page {
+/* CENTERING */
+.auth-container {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
 }
-.login-card {
-  width: 420px;
-  background: var(--glass);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 36px;
-  box-shadow: var(--shadow);
+
+/* CARD */
+.auth-card {
+  width: 100%;
+  max-width: 520px;
+  padding: 64px 56px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(18px);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+  color: #fff;
+}
+
+/* TEXT */
+.auth-title {
+  font-size: 42px;
+  font-weight: 600;
+  margin-bottom: 24px;
+}
+
+.auth-subtitle {
+  font-size: 18px;
+  opacity: 0.9;
+  margin-bottom: 48px;
+  line-height: 1.8;
 }
 
 /* TABS */
-.login-tabs {
+.auth-tabs {
   display: flex;
-  gap: 10px;
-  margin: 20px 0;
+  gap: 12px;
+  margin-bottom: 40px;
 }
-.tab {
+
+.auth-tab {
   flex: 1;
-  padding: 12px;
+  padding: 14px;
   border-radius: 12px;
-  border: 1px solid var(--border);
-  background: transparent;
-  color: white;
+  border: none;
   cursor: pointer;
+  font-size: 15px;
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
 }
-.tab.active {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-soft);
+
+.auth-tab.active {
+  background: rgba(120, 90, 255, 0.9);
 }
 
 /* FORM */
-.label {
-  margin-top: 14px;
-  display: block;
-  font-size: 13px;
-}
-.input {
-  width: 100%;
-  padding: 12px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background: rgba(0,0,0,0.25);
-  color: white;
+.field {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 28px;
 }
 
-/* BUTTONS */
-.btn {
-  padding: 14px;
+.field label {
+  font-size: 14px;
+  margin-bottom: 10px;
+  opacity: 0.85;
+}
+
+.field input {
+  height: 52px;
   border-radius: 14px;
   border: none;
-  cursor: pointer;
-  font-weight: 800;
-}
-.btn.primary {
-  background: var(--accent-soft);
-  border: 1px solid var(--accent);
-  color: white;
-}
-.btn.large {
-  padding: 18px 42px;
+  padding: 0 18px;
   font-size: 16px;
+  outline: none;
 }
 
-/* FOOTER */
-.login-footer {
-  margin-top: 26px;
-  font-size: 12px;
-  color: var(--text-muted);
-  text-align: center;
+/* BUTTON */
+.btn-primary {
+  margin-top: 20px;
+  height: 56px;
+  border-radius: 16px;
+  border: none;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  background: linear-gradient(135deg, #7b5cff, #5f3bff);
+  color: #fff;
 }
 
-.error {
-  color: var(--danger);
-  margin-top: 12px;
-  text-align: center;
+/* FOOTNOTE */
+.auth-footnote {
+  margin-top: 36px;
+  font-size: 13px;
+  opacity: 0.7;
+  line-height: 1.6;
 }
 
-.hidden { display: none; }
+/* ERROR */
+.auth-error {
+  margin-top: 18px;
+  font-size: 14px;
+  color: #ffb4b4;
+}
