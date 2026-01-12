@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Accueil · Patient virtuel</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Background -->
+  <div class="auth-bg"></div>
+  <div class="auth-overlay"></div>
+
+  <div class="app-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h2>Patient virtuel</h2>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="nav-item" data-section="home">Accueil</button>
+        <button class="nav-item" data-section="profile">Mon profil</button>
+        <button class="nav-item" data-section="friends">Mes amis</button>
+        <button class="nav-item" data-section="forum">Discussion</button>
+        <button class="nav-item" data-section="updates">Mise à jour recherche</button>
+
+        <div class="nav-divider"></div>
+
+        <button class="nav-item beta" data-section="ai">
+          Outil AI <span class="beta-pill">BETA</span>
+        </button>
+      </nav>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="content">
+
+      <!-- HOME -->
+      <section class="content-section active" id="section-home">
+        <h1>Bienvenue</h1>
+        <p class="content-text">
+          Sélectionnez une option dans le menu à gauche pour commencer.
+        </p>
+      </section>
+
+      <!-- PROFILE -->
+      <section class="content-section" id="section-profile">
+        <h1>Mon profil</h1>
+        <p class="content-text">
+          Modification de l’avatar et de la biographie (à venir).
+        </p>
+      </section>
+
+      <!-- FRIENDS -->
+      <section class="content-section" id="section-friends">
+        <h1>Mes amis</h1>
+        <p class="content-text">
+          Rechercher des amis, gérer les demandes et discuter de cas cliniques.
+        </p>
+      </section>
+
+      <!-- FORUM -->
+      <section class="content-section" id="section-forum">
+        <h1>Discussion</h1>
+        <p class="content-text">
+          Forum général pour échanger entre étudiants.
+        </p>
+      </section>
+
+      <!-- UPDATES -->
+      <section class="content-section" id="section-updates">
+        <h1>Mise à jour recherche</h1>
+        <pre class="code-block">print("hello world")</pre>
+      </section>
+
+      <!-- AI -->
+      <section class="content-section" id="section-ai">
+        <h1>Outil AI – Patient virtuel</h1>
+        <p class="content-text">
+          Le chatbot est accessible ici.
+        </p>
+
+        <button class="btn-primary">
+          Lancer le patient virtuel
+        </button>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- NAV SCRIPT -->
+  <script>
+    const buttons = document.querySelectorAll(".nav-item");
+    const sections = document.querySelectorAll(".content-section");
+
+    buttons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const target = btn.dataset.section;
+
+        sections.forEach(sec => {
+          sec.classList.toggle("active", sec.id === "section-" + target);
+        });
+
+        buttons.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+      });
+    });
+  </script>
+
+</body>
+</html>
