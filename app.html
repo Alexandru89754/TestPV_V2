@@ -4,84 +4,207 @@
   <meta charset="UTF-8" />
   <title>Patient virtuel · Application</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <link rel="stylesheet" href="style.css" />
+
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: url("./asset/image_in.png") center / cover no-repeat fixed;
+      overflow-y: auto;
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(255,255,255,0.55);
+      backdrop-filter: blur(6px);
+      z-index: 0;
+    }
+
+    .app-container {
+      position: relative;
+      z-index: 1;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 40px 20px 80px;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    .logout-btn {
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: none;
+      background: #ef4444;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .nav {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 40px;
+    }
+
+    .nav-btn {
+      flex: 1;
+      padding: 14px;
+      font-size: 15px;
+      font-weight: 600;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      background: #e5e7eb;
+    }
+
+    .nav-btn.active {
+      background: #2f5bea;
+      color: white;
+    }
+
+    .section {
+      display: none;
+      background: rgba(255,255,255,0.92);
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+    }
+
+    .section.active {
+      display: block;
+    }
+
+    .chat-box {
+      height: 360px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      background: #fff;
+    }
+
+    .bubble {
+      max-width: 75%;
+      margin-bottom: 12px;
+      padding: 12px 16px;
+      border-radius: 14px;
+      font-size: 14px;
+      white-space: pre-wrap;
+    }
+
+    .bubble.user {
+      background: #2f5bea;
+      color: white;
+      margin-left: auto;
+    }
+
+    .bubble.bot {
+      background: #e5e7eb;
+    }
+
+    .chat-controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .chat-input {
+      flex: 1;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+    }
+
+    .btn {
+      padding: 12px 16px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .btn.primary { background:#2f5bea; color:white; }
+    .btn.ghost { background:#e5e7eb; }
+  </style>
 </head>
 
-<body style="background:url('./asset/image_in.png') center/cover fixed">
+<body>
 
-<div class="app-container">
+  <div class="overlay"></div>
 
-  <!-- TOP -->
-  <div class="top-bar">
-    <h2>Patient virtuel</h2>
-    <button id="logout-btn">Déconnexion</button>
-  </div>
+  <div class="app-container">
 
-  <!-- NAV -->
-  <div class="nav">
-    <button class="nav-btn" data-target="chat">Chat_bot_Beta</button>
-    <button class="nav-btn" data-target="forum">Forum</button>
-  </div>
-
-  <!-- CHAT -->
-  <section id="chat" class="section active">
-    <h1>Chat_bot_Beta</h1>
-    <div id="chat-box" style="height:300px;border:1px solid #ccc;margin-bottom:10px"></div>
-    <input id="chat-input" placeholder="Message…" />
-    <button id="send-btn">Envoyer</button>
-  </section>
-
-  <!-- FORUM -->
-  <section id="forum" class="section">
-
-    <h1>Forum</h1>
-
-    <!-- CRÉER POST -->
-    <h3>Créer un post</h3>
-
-    <input
-      id="post-title"
-      placeholder="Titre du post"
-      style="width:100%;margin-bottom:10px"
-    />
-
-    <textarea
-      id="post-body"
-      placeholder="Contenu du post"
-      style="width:100%;height:100px"
-    ></textarea>
-
-    <button id="create-post">Publier</button>
-
-    <hr style="margin:30px 0"/>
-
-    <!-- POSTS + COMMENTS -->
-    <div style="display:flex;gap:20px">
-
-      <div style="width:40%">
-        <h3>Posts</h3>
-        <div id="posts-list"></div>
-      </div>
-
-      <div style="width:60%">
-        <h3>Commentaires</h3>
-        <div id="comments-list"></div>
-
-        <textarea
-          id="comment-input"
-          placeholder="Répondre…"
-          style="width:100%;height:80px;margin-top:10px"
-        ></textarea>
-
-        <button id="send-comment">Répondre</button>
-      </div>
-
+    <div class="top-bar">
+      <h2>Patient virtuel</h2>
+      <button id="logout-btn" class="logout-btn">Déconnexion</button>
     </div>
-  </section>
 
-</div>
+    <div class="nav">
+      <button class="nav-btn" data-target="chat">Chat_bot_Beta</button>
+      <button class="nav-btn" data-target="forum">Forum</button>
+      <button class="nav-btn" data-target="projects">Projets</button>
+      <button class="nav-btn" data-target="friends">Amis</button>
+    </div>
 
-<script src="./config.js"></script>
-<script src="./app.js"></script>
+    <!-- CHAT -->
+    <section id="chat" class="section">
+      <h1>Chat_bot_Beta</h1>
+
+      <div id="chat-box" class="chat-box"></div>
+
+      <div class="chat-controls">
+        <input id="chat-input" class="chat-input" placeholder="Écris ton message…" />
+        <button id="send-btn" class="btn primary">Envoyer</button>
+      </div>
+    </section>
+
+    <!-- FORUM -->
+    <section id="forum" class="section">
+      <h1>Forum</h1>
+
+      <h3>Créer un post</h3>
+      <input id="post-title" placeholder="Titre" style="width:100%;padding:10px;margin-bottom:10px">
+      <textarea id="post-body" placeholder="Contenu…" style="width:100%;height:100px"></textarea>
+      <button id="create-post" class="btn primary" style="margin-top:10px">Publier</button>
+
+      <hr style="margin:30px 0">
+
+      <div style="display:flex; gap:30px">
+        <div style="width:40%">
+          <h3>Posts</h3>
+          <div id="posts-list"></div>
+        </div>
+
+        <div style="width:60%">
+          <h3>Commentaires</h3>
+          <div id="comments-list"></div>
+
+          <textarea id="comment-input" placeholder="Répondre…" style="width:100%;height:80px;margin-top:10px"></textarea>
+          <button id="send-comment" class="btn primary" style="margin-top:10px">Répondre</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="projects" class="section">
+      <h1>Projets</h1>
+    </section>
+
+    <section id="friends" class="section">
+      <h1>Amis</h1>
+    </section>
+
+  </div>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
