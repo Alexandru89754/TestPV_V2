@@ -1,12 +1,14 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const CFG = window.CONFIG || {};
+  if (!window.CONFIG) {
+    alert("Erreur: config.js n'est pas chargé. Vérifie l'ordre des <script>.");
+    return;
+  }
 
-  // ✅ URLs backend (depuis config.js)
-  const BACKEND_CHAT_URL = CFG.CHAT_URL || (CFG.API_BASE_URL ? `${CFG.API_BASE_URL}/chat` : "");
-  const BACKEND_UPLOAD_URL = CFG.UPLOAD_URL || (CFG.API_BASE_URL ? `${CFG.API_BASE_URL}/upload-video` : "");
+  const BACKEND_CHAT_URL = window.CONFIG.CHAT_URL;
+  const BACKEND_UPLOAD_URL = window.CONFIG.UPLOAD_URL;
 
-  const BG_CHAT = CFG.BG_CHAT || "./asset/image_in.png";
-  const PARTICIPANT_KEY = CFG.PARTICIPANT_KEY || "pv_participant_id";
+  const BG_CHAT = window.CONFIG.BG_CHAT;
+  const PARTICIPANT_KEY = window.CONFIG.PARTICIPANT_KEY;
 
   const appBg = document.getElementById("app-bg");
   const participantPill = document.getElementById("participant-pill");
@@ -38,7 +40,9 @@ document.addEventListener("DOMContentLoaded", () => {
   function addMessageToUI(text, role) {
     const div = document.createElement("div");
     div.classList.add("message");
-    div.classList.add(role === "user" ? "user-message" : role === "bot" ? "bot-message" : "system-message");
+    div.classList.add(
+      role === "user" ? "user-message" : role === "bot" ? "bot-message" : "system-message"
+    );
     div.textContent = String(text ?? "");
     messagesEl.appendChild(div);
     messagesEl.scrollTop = messagesEl.scrollHeight;
@@ -69,14 +73,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function sendToBackend(message, participantId) {
-    if (!BACKEND_CHAT_URL) {
-      throw new Error("BACKEND_CHAT_URL manquant (config.js).");
-    }
-
     const res = await fetch(BACKEND_CHAT_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message, userId: participantId })
+      body: JSON.stringify({ message, userId: participantId }),
     });
 
     if (!res.ok) {
@@ -101,7 +101,7 @@ document.addEventListener("DOMContentLoaded", () => {
     history.push({
       role: "bot",
       text: "Bonjour. Je suis votre patient virtuel. Quelle est votre principale raison de consultation aujourd’hui ?",
-      ts: new Date().toISOString()
+      ts: new Date().toISOString(),
     });
     saveHistory(participantId, history);
   }
@@ -150,7 +150,9 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   clearBtn.addEventListener("click", () => {
-    history = [{ role: "bot", text: "Conversation effacée. Recommencez quand vous voulez.", ts: new Date().toISOString() }];
+    history = [
+      { role: "bot", text: "Conversation effacée. Recommencez quand vous voulez.", ts: new Date().toISOString() }
+    ];
     saveHistory(participantId, history);
     renderHistory(history);
     setStatus("Prêt");
@@ -171,7 +173,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function stopTracks() {
     if (stream) {
-      stream.getTracks().forEach(t => t.stop());
+      stream.getTracks().forEach((t) => t.stop());
       stream = null;
     }
   }
@@ -182,13 +184,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
       stream = await navigator.mediaDevices.getUserMedia({
         video: true,
-        audio: false
+        audio: false,
       });
 
       const mimeCandidates = ["video/webm;codecs=vp9", "video/webm;codecs=vp8", "video/webm"];
       let mimeType = "";
       for (const m of mimeCandidates) {
-        if (window.MediaRecorder && MediaRecorder.isTypeSupported(m)) { mimeType = m; break; }
+        if (window.MediaRecorder && MediaRecorder.isTypeSupported(m)) {
+          mimeType = m;
+          break;
+        }
       }
 
       chunks = [];
@@ -207,12 +212,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       recorder.onstop = async () => {
         try {
-          if (!BACKEND_UPLOAD_URL) {
-            setStatus("Upload désactivé");
-            addMessageToUI("Upload vidéo non configuré (config.js).", "system");
-            return;
-          }
-
           setStatus("Upload…");
 
           const blob = new Blob(chunks, { type: recorder.mimeType || "video/webm" });

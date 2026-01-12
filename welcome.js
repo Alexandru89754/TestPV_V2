@@ -1,7 +1,11 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const CFG = window.CONFIG || {};
-  const BG_WELCOME = CFG.BG_WELCOME || "./asset/image_out.png";
-  const PARTICIPANT_KEY = CFG.PARTICIPANT_KEY || "pv_participant_id";
+  if (!window.CONFIG) {
+    alert("Erreur: config.js n'est pas chargé. Vérifie l'ordre des <script>.");
+    return;
+  }
+
+  const BG_WELCOME = window.CONFIG.BG_WELCOME;
+  const PARTICIPANT_KEY = window.CONFIG.PARTICIPANT_KEY;
 
   const appBg = document.getElementById("app-bg");
   const participantInput = document.getElementById("participant-id");
