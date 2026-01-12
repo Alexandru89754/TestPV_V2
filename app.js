@@ -29,54 +29,82 @@ document.addEventListener("DOMContentLoaded", () => {
     window.location.href = "index.html";
   };
 
-  /* CHAT */
-  const chatBox = document.getElementById("chat-box");
-  const input = document.getElementById("chat-input");
-  const sendBtn = document.getElementById("send-btn");
+  /* ======================
+   CHAT
+====================== */
+const chatBox = document.getElementById("chat-box");
+const input = document.getElementById("chat-input");
+const sendBtn = document.getElementById("send-btn");
 
-  const CHAT_KEY = `pv_chat_${token}`;
-  let history = JSON.parse(localStorage.getItem(CHAT_KEY) || "[]");
+// 🔐 utilisateur courant (email)
+const userId = localStorage.getItem(C.USER_EMAIL_KEY);
 
-  function renderChat() {
-    chatBox.innerHTML = "";
-    history.forEach(m => {
-      const div = document.createElement("div");
-      div.className = `bubble ${m.role}`;
-      div.textContent = m.text;
-      chatBox.appendChild(div);
-    });
-  }
+if (!userId) {
+  alert("Utilisateur non identifié. Veuillez vous reconnecter.");
+  window.location.href = "index.html";
+  return;
+}
 
+// ✅ HISTORIQUE PAR UTILISATEUR (ET PAS PAR TOKEN)
+const CHAT_KEY = `pv_chat_${userId}`;
+let history = JSON.parse(localStorage.getItem(CHAT_KEY) || "[]");
+
+function renderChat() {
+  chatBox.innerHTML = "";
+  history.forEach(m => {
+    const div = document.createElement("div");
+    div.className = `bubble ${m.role}`;
+    div.textContent = m.text;
+    chatBox.appendChild(div);
+  });
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+renderChat();
+
+sendBtn.onclick = async () => {
+  const msg = input.value.trim();
+  if (!msg) return;
+
+  input.value = "";
+
+  // message utilisateur
+  history.push({ role: "user", text: msg });
+  localStorage.setItem(CHAT_KEY, JSON.stringify(history));
   renderChat();
 
-  sendBtn.onclick = async () => {
-    const msg = input.value.trim();
-    if (!msg) return;
-    input.value = "";
+  try {
+    const res = await fetch(C.CHAT_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        message: msg,
+        userId: userId   // 🔥 OBLIGATOIRE POUR TON BACKEND
+      })
+    });
 
-    history.push({ role: "user", text: msg });
-    localStorage.setItem(CHAT_KEY, JSON.stringify(history));
-    renderChat();
-
-    const userId = localStorage.getItem(C.USER_EMAIL_KEY);
-
-const res = await fetch(C.CHAT_URL, {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    "Authorization": `Bearer ${token}`
-  },
-  body: JSON.stringify({
-    message: msg,
-    userId: userId
-  })
-});
     const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data?.detail || "Erreur backend");
+    }
+
     history.push({ role: "bot", text: data.reply });
     localStorage.setItem(CHAT_KEY, JSON.stringify(history));
     renderChat();
-  };
 
+  } catch (e) {
+    history.push({
+      role: "bot",
+      text: "Erreur : backend inaccessible."
+    });
+    localStorage.setItem(CHAT_KEY, JSON.stringify(history));
+    renderChat();
+  }
+};
   /* FORUM */
   const postsList = document.getElementById("posts-list");
   const commentsList = document.getElementById("comments-list");
