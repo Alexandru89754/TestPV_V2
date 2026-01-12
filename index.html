@@ -1,254 +1,184 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <title>Patient Virtuel</title>
+<meta charset="UTF-8">
+<title>Patient Virtuel</title>
 
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: Arial, sans-serif;
-    }
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+html,body{width:100%;height:100%}
 
-    html, body {
-      width: 100%;
-      height: 100%;
-    }
+/* ========== AUTH ========== */
+#auth-screen{
+  height:100%;
+  background:
+    linear-gradient(rgba(70,120,200,.75),rgba(255,255,255,.7)),
+    url("image_out.png");
+  background-size:cover;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
 
-    body {
-      color: white;
-    }
+.auth-box{
+  width:380px;
+  padding:40px;
+  background:rgba(255,255,255,.25);
+  backdrop-filter:blur(14px);
+  border-radius:12px;
+}
 
-    /* ============================= */
-    /* LOGIN / REGISTER BACKGROUND */
-    /* ============================= */
-    #auth-screen {
-      width: 100%;
-      height: 100%;
-      background:
-        linear-gradient(
-          rgba(40, 90, 160, 0.75),
-          rgba(255, 255, 255, 0.65)
-        ),
-        url("image_out.png");
-      background-size: cover;
-      background-position: center;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+.auth-box h1{text-align:center;margin-bottom:20px}
 
-    .glass-box {
-      width: 380px;
-      padding: 40px;
-      border-radius: 12px;
-      background: rgba(255, 255, 255, 0.18);
-      backdrop-filter: blur(12px);
-      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-      color: #fff;
-    }
+.auth-box input{
+  width:100%;
+  padding:10px;
+  margin-bottom:12px;
+  border:none;
+  border-radius:4px;
+}
 
-    .glass-box h1 {
-      text-align: center;
-      margin-bottom: 25px;
-      font-size: 28px;
-    }
+.auth-box button{
+  width:100%;
+  padding:10px;
+  font-weight:bold;
+  border:none;
+  cursor:pointer;
+  margin-bottom:8px;
+}
 
-    .tabs {
-      display: flex;
-      margin-bottom: 20px;
-    }
+/* ========== APP ========== */
+#app{
+  display:none;
+  height:100%;
+  background:url("image_in.png");
+  background-size:cover;
+  display:flex;
+}
 
-    .tabs button {
-      flex: 1;
-      padding: 10px;
-      border: none;
-      cursor: pointer;
-      background: rgba(255,255,255,0.3);
-      color: #000;
-      font-weight: bold;
-    }
+.sidebar{
+  width:240px;
+  background:rgba(0,0,0,.6);
+  backdrop-filter:blur(8px);
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
 
-    .tabs button.active {
-      background: white;
-    }
+.sidebar button{
+  padding:10px;
+  border:none;
+  cursor:pointer;
+  font-weight:bold;
+}
 
-    .glass-box input {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 15px;
-      border: none;
-      border-radius: 4px;
-    }
+.main{
+  flex:1;
+  padding:40px;
+}
 
-    .glass-box .action-btn {
-      width: 100%;
-      padding: 10px;
-      border: none;
-      background: white;
-      color: black;
-      font-weight: bold;
-      cursor: pointer;
-      border-radius: 4px;
-    }
+.section{
+  display:none;
+  background:rgba(255,255,255,.9);
+  padding:30px;
+  border-radius:10px;
+}
 
-    /* ============================= */
-    /* APP AFTER LOGIN */
-    /* ============================= */
-    #app {
-      display: none;
-      width: 100%;
-      height: 100%;
-      background-image: url("image_in.png");
-      background-size: cover;
-      background-position: center;
-    }
-
-    .top-nav {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      padding: 15px 20px;
-      display: flex;
-      gap: 10px;
-      background: rgba(0,0,0,0.55);
-      backdrop-filter: blur(6px);
-      z-index: 10;
-    }
-
-    .top-nav button {
-      padding: 8px 14px;
-      border: none;
-      background: white;
-      color: black;
-      font-weight: bold;
-      cursor: pointer;
-      border-radius: 4px;
-    }
-
-    .content {
-      display: none;
-      max-width: 800px;
-      margin: 140px auto;
-      padding: 30px;
-      background: rgba(0,0,0,0.6);
-      backdrop-filter: blur(8px);
-      border-radius: 10px;
-    }
-
-    .launch-btn {
-      margin-top: 20px;
-      padding: 10px 16px;
-      border: none;
-      background: white;
-      color: black;
-      font-weight: bold;
-      cursor: pointer;
-      border-radius: 4px;
-    }
-  </style>
+.section.active{display:block}
+</style>
 </head>
 
 <body>
 
-  <!-- AUTH SCREEN -->
-  <div id="auth-screen">
-    <div class="glass-box">
+<!-- AUTH -->
+<div id="auth-screen">
+  <div class="auth-box">
+    <h1>Patient Virtuel</h1>
+    <input id="email" type="email" placeholder="Email">
+    <input id="password" type="password" placeholder="Mot de passe">
+    <button onclick="login()">Connexion</button>
+    <button onclick="register()">Créer un compte</button>
+    <p id="authMsg"></p>
+  </div>
+</div>
 
-      <h1>Patient Virtuel</h1>
+<!-- APP -->
+<div id="app">
 
-      <div class="tabs">
-        <button id="loginTab" class="active" onclick="showLogin()">Connexion</button>
-        <button id="registerTab" onclick="showRegister()">Créer un compte</button>
-      </div>
-
-      <!-- LOGIN -->
-      <div id="loginForm">
-        <input type="email" placeholder="Email" />
-        <input type="password" placeholder="Mot de passe" />
-        <button class="action-btn" onclick="enterApp()">Connexion</button>
-      </div>
-
-      <!-- REGISTER -->
-      <div id="registerForm" style="display:none;">
-        <input type="text" placeholder="Nom complet" />
-        <input type="email" placeholder="Email" />
-        <input type="password" placeholder="Mot de passe" />
-        <button class="action-btn" onclick="enterApp()">Créer le compte</button>
-      </div>
-
-    </div>
+  <div class="sidebar">
+    <button onclick="showSection('profil')">Mon profil</button>
+    <button onclick="showSection('amis')">Mes amis</button>
+    <button onclick="showSection('discussion')">Discussion</button>
+    <button onclick="showSection('recherche')">Mise à jour recherche</button>
+    <button onclick="showSection('ai')">Outil_AI_BETA</button>
   </div>
 
-  <!-- APP -->
-  <div id="app">
+  <div class="main">
 
-    <div class="top-nav">
-      <button onclick="showSection('home')">Accueil</button>
-      <button onclick="showSection('profil')">Mon profil</button>
-      <button onclick="showSection('amis')">Mes amis</button>
-      <button onclick="showSection('discussion')">Discussion</button>
-      <button onclick="showSection('recherche')">Recherche</button>
-      <button onclick="showSection('ai')">Outil AI</button>
+    <div id="profil" class="section">
+      <h2>Mon profil</h2>
+      <input placeholder="URL avatar">
+      <textarea placeholder="Bio"></textarea>
     </div>
 
-    <div id="home" class="content">
-      <h1>Bienvenue</h1>
-      <p>Sélectionnez une option dans le menu.</p>
+    <div id="amis" class="section">
+      <h2>Mes amis</h2>
+      <ul>
+        <li>Rechercher des amis</li>
+        <li>Voir mes amis</li>
+        <li>Demandes reçues (accepter / refuser)</li>
+        <li>Demandes envoyées</li>
+        <li>Chat clinique</li>
+      </ul>
     </div>
 
-    <div id="profil" class="content">
-      <h1>Mon profil</h1>
+    <div id="discussion" class="section">
+      <h2>Forum général</h2>
+      <p>Poster, modifier et répondre</p>
     </div>
 
-    <div id="amis" class="content">
-      <h1>Mes amis</h1>
+    <div id="recherche" class="section">
+      <pre>print("hello world")</pre>
     </div>
 
-    <div id="discussion" class="content">
-      <h1>Discussion</h1>
-    </div>
-
-    <div id="recherche" class="content">
-      <h1>Mise à jour recherche</h1>
-    </div>
-
-    <div id="ai" class="content">
-      <h1>Outil AI – Patient virtuel</h1>
-      <button class="launch-btn">Lancer le patient virtuel</button>
+    <div id="ai" class="section">
+      <h2>Outil AI – Patient virtuel</h2>
+      <p>Chatbot chargé ici</p>
     </div>
 
   </div>
+</div>
 
-  <script>
-    function showLogin() {
-      document.getElementById("loginForm").style.display = "block";
-      document.getElementById("registerForm").style.display = "none";
-      document.getElementById("loginTab").classList.add("active");
-      document.getElementById("registerTab").classList.remove("active");
-    }
+<script>
+async function login(){
+  const { error } = await supabase.auth.signInWithPassword({
+    email: email.value,
+    password: password.value
+  });
+  if(error){ authMsg.innerText = error.message; }
+  else enterApp();
+}
 
-    function showRegister() {
-      document.getElementById("loginForm").style.display = "none";
-      document.getElementById("registerForm").style.display = "block";
-      document.getElementById("loginTab").classList.remove("active");
-      document.getElementById("registerTab").classList.add("active");
-    }
+async function register(){
+  const { error } = await supabase.auth.signUp({
+    email: email.value,
+    password: password.value
+  });
+  if(error){ authMsg.innerText = error.message; }
+  else authMsg.innerText = "Compte créé. Vérifie ton email.";
+}
 
-    function enterApp() {
-      document.getElementById("auth-screen").style.display = "none";
-      document.getElementById("app").style.display = "block";
-    }
+function enterApp(){
+  document.getElementById("auth-screen").style.display="none";
+  document.getElementById("app").style.display="flex";
+}
 
-    function showSection(id) {
-      document.querySelectorAll(".content").forEach(c => c.style.display = "none");
-      const section = document.getElementById(id);
-      if (section) section.style.display = "block";
-    }
-  </script>
+function showSection(id){
+  document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+</script>
 
 </body>
 </html>
