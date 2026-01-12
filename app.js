@@ -15,24 +15,16 @@ document.addEventListener("DOMContentLoaded", () => {
   const sections = document.querySelectorAll(".section");
 
   function showSection(id) {
-    sections.forEach(s => {
-      s.classList.toggle("active", s.id === id);
-    });
-    buttons.forEach(b => {
-      b.classList.toggle("active", b.dataset.target === id);
-    });
+    sections.forEach(s => s.classList.toggle("active", s.id === id));
+    buttons.forEach(b => b.classList.toggle("active", b.dataset.target === id));
     if (id) localStorage.setItem("pv_active_tab", id);
   }
 
-  buttons.forEach(btn => {
-    btn.addEventListener("click", () => {
-      showSection(btn.dataset.target);
-    });
-  });
+  buttons.forEach(b =>
+    b.addEventListener("click", () => showSection(b.dataset.target))
+  );
 
-  // ✅ IMPORTANT : section par défaut
-  const savedTab = localStorage.getItem("pv_active_tab") || "chat";
-  showSection(savedTab);
+  showSection(localStorage.getItem("pv_active_tab") || "chat");
 
   /* ======================
      CHAT BOT
@@ -41,12 +33,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const input = document.getElementById("chat-input");
   const sendBtn = document.getElementById("send-btn");
 
-  if (!chatBox || !input || !sendBtn) {
-    console.error("Chat elements manquants dans le DOM");
-    return;
-  }
+  const userId =
+    localStorage.getItem(C.PARTICIPANT_KEY) ||
+    localStorage.getItem(C.USER_EMAIL_KEY) ||
+    "anonymous";
 
-  const CHAT_KEY = "pv_chat_history";
+  const CHAT_KEY = `pv_chat_history_${userId}`;
   let history = JSON.parse(localStorage.getItem(CHAT_KEY) || "[]");
 
   function addBubble(text, role) {
@@ -60,6 +52,14 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderHistory() {
     chatBox.innerHTML = "";
     history.forEach(m => addBubble(m.text, m.role));
+  }
+
+  if (history.length === 0) {
+    history.push({
+      role: "bot",
+      text: "Bonjour. Je suis votre patient virtuel. Quelle est votre principale raison de consultation aujourd’hui ?"
+    });
+    localStorage.setItem(CHAT_KEY, JSON.stringify(history));
   }
 
   renderHistory();
@@ -78,12 +78,12 @@ document.addEventListener("DOMContentLoaded", () => {
       const res = await fetch(C.CHAT_URL, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({
           message: msg,
-          history
+          history,
+          userId
         })
       });
 
@@ -96,7 +96,7 @@ document.addEventListener("DOMContentLoaded", () => {
       localStorage.setItem(CHAT_KEY, JSON.stringify(history));
       addBubble(reply, "bot");
 
-    } catch (e) {
+    } catch {
       addBubble("❌ Erreur : backend inaccessible.", "bot");
     }
   }
@@ -112,8 +112,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const startVideoBtn = document.getElementById("start-video");
   const stopVideoBtn = document.getElementById("stop-video");
 
-  let recorder;
-  let chunks = [];
+  let recorder, chunks = [];
 
   startVideoBtn.onclick = async () => {
     const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
@@ -136,9 +135,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       await fetch(C.UPLOAD_URL, {
         method: "POST",
-        headers: {
-          "Authorization": `Bearer ${token}`
-        },
         body: fd
       });
 
