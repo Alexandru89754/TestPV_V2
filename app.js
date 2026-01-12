@@ -10,6 +10,8 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
+  const userEmail = localStorage.getItem(C.USER_EMAIL_KEY);
+
   /* ======================
      NAVIGATION
      ====================== */
@@ -17,14 +19,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const sections = document.querySelectorAll(".section");
 
   function showSection(id) {
-    sections.forEach(section => {
-      section.classList.toggle("active", section.id === id);
+    sections.forEach(sec => {
+      sec.classList.toggle("active", sec.id === id);
     });
-
     buttons.forEach(btn => {
       btn.classList.toggle("active", btn.dataset.target === id);
     });
-
     localStorage.setItem("pv_active_tab", id);
   }
 
@@ -34,7 +34,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // ✅ section par défaut (ou restaurée)
   const savedTab = localStorage.getItem("pv_active_tab");
   const initialTab =
     savedTab && document.getElementById(savedTab)
@@ -46,8 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ======================
      LOGOUT
      ====================== */
-  const logoutBtn = document.getElementById("logout-btn");
-  logoutBtn.addEventListener("click", async () => {
+  document.getElementById("logout-btn").addEventListener("click", async () => {
     try {
       await fetch(C.AUTH_LOGOUT_URL, {
         method: "POST",
@@ -65,15 +63,13 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   /* ======================
-     CHAT BOT
+     CHAT BOT (PAR UTILISATEUR)
      ====================== */
   const chatBox = document.getElementById("chat-box");
   const chatInput = document.getElementById("chat-input");
   const sendBtn = document.getElementById("send-btn");
 
-  const userEmail = localStorage.getItem(C.USER_EMAIL_KEY);
   const CHAT_KEY = `pv_chat_${userEmail}`;
-
   let history = JSON.parse(localStorage.getItem(CHAT_KEY) || "[]");
 
   function addBubble(text, role) {
@@ -178,4 +174,87 @@ document.addEventListener("DOMContentLoaded", () => {
     startVideoBtn.disabled = false;
     stopVideoBtn.disabled = true;
   };
+
+  /* ======================
+     FORUM (PUBLIC)
+     ====================== */
+  const postsList = document.getElementById("posts-list");
+  const commentsList = document.getElementById("comments-list");
+  const commentInput = document.getElementById("comment-input");
+  const sendCommentBtn = document.getElementById("send-comment");
+
+  let currentPostId = null;
+
+  async function loadPosts() {
+    const res = await fetch(C.FORUM_POSTS_URL, {
+      headers: {
+        "Authorization": `Bearer ${token}`
+      }
+    });
+    const posts = await res.json();
+
+    postsList.innerHTML = "";
+    posts.forEach(p => {
+      const div = document.createElement("div");
+      div.textContent = p.title;
+      div.style.cursor = "pointer";
+      div.style.padding = "8px";
+      div.style.borderBottom = "1px solid #ddd";
+      div.onclick = () => openPost(p.id);
+      postsList.appendChild(div);
+    });
+  }
+
+  async function openPost(postId) {
+    currentPostId = postId;
+
+    const res = await fetch(
+      `${C.FORUM_COMMENTS_PREFIX}${postId}/comments`,
+      {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      }
+    );
+
+    const comments = await res.json();
+    renderComments(comments);
+  }
+
+  function renderComments(comments) {
+    commentsList.innerHTML = "";
+    comments.forEach(c => {
+      const div = document.createElement("div");
+      div.style.marginBottom = "10px";
+      div.innerHTML = `
+        <strong>Utilisateur #${c.author_id}</strong><br/>
+        ${c.body}
+      `;
+      commentsList.appendChild(div);
+    });
+  }
+
+  sendCommentBtn.addEventListener("click", async () => {
+    if (!currentPostId) return;
+
+    const text = commentInput.value.trim();
+    if (!text) return;
+
+    await fetch(
+      `${C.FORUM_COMMENTS_PREFIX}${currentPostId}/comments`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ body: text })
+      }
+    );
+
+    commentInput.value = "";
+    openPost(currentPostId);
+  });
+
+  loadPosts();
 });
