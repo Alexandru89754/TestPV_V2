@@ -2,64 +2,49 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Connexion · Patient virtuel</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
   <!-- Background -->
-  <div class="auth-bg"></div>
-
-  <!-- Overlay -->
-  <div class="auth-overlay"></div>
+  <div class="login-bg"></div>
+  <div class="login-overlay"></div>
 
   <!-- Login Card -->
-  <main class="auth-container">
-    <section class="auth-card">
+  <div class="login-wrapper">
+    <div class="login-card">
 
-      <h1 class="auth-title">Bienvenue</h1>
-
-      <p class="auth-subtitle">
+      <h1 class="login-title">Bienvenue</h1>
+      <p class="login-subtitle">
         Connectez-vous ou créez un compte
       </p>
 
-      <!-- Mode switch -->
-      <div class="auth-tabs">
-        <button class="auth-tab active" id="tab-login">Connexion</button>
-        <button class="auth-tab" id="tab-register">Créer un compte</button>
+      <div class="login-tabs">
+        <button class="tab active">Connexion</button>
+        <button class="tab">Créer un compte</button>
       </div>
 
-      <!-- Form -->
-      <form id="auth-form" autocomplete="off">
+      <form class="login-form">
+        <label>Adresse courriel</label>
+        <input type="email" placeholder="ex: etudiant@universite.ca" />
 
-        <div class="field">
-          <label for="email">Adresse courriel</label>
-          <input type="email" id="email" required />
-        </div>
+        <label>Mot de passe</label>
+        <input type="password" placeholder="••••••••" />
 
-        <div class="field">
-          <label for="password">Mot de passe</label>
-          <input type="password" id="password" required />
-        </div>
-
-        <button type="submit" class="btn-primary" id="submit-btn">
+        <button type="submit" class="login-btn">
           Se connecter
         </button>
-
       </form>
 
-      <p class="auth-footnote">
-        Utilisation académique uniquement.<br />
+      <p class="login-footer">
+        Utilisation académique uniquement.<br/>
         Aucune donnée personnelle réelle.
       </p>
 
-      <p class="auth-error" id="auth-error"></p>
+    </div>
+  </div>
 
-    </section>
-  </main>
-
-  <script src="config.js"></script>
-  <script src="login.js"></script>
 </body>
 </html>
