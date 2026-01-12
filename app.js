@@ -6,16 +6,16 @@ document.addEventListener("DOMContentLoaded", () => {
      ====================== */
   const token = localStorage.getItem(C.TOKEN_KEY);
   const userId =
-    localStorage.getItem(C.PARTICIPANT_KEY) ||
-    localStorage.getItem(C.USER_EMAIL_KEY);
+    localStorage.getItem(C.USER_EMAIL_KEY) ||
+    localStorage.getItem(C.PARTICIPANT_KEY);
 
   if (!token || !userId) {
-    window.location.href = "index.html";
+    window.location.replace("index.html");
     return;
   }
 
   /* ======================
-     NAV + STATE PERSISTENCE
+     NAVIGATION
      ====================== */
   const buttons = document.querySelectorAll(".nav-btn");
   const sections = document.querySelectorAll(".section");
@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
   showSection(localStorage.getItem("pv_active_tab") || "chat");
 
   /* ======================
-     CHAT BOT (PAR UTILISATEUR)
+     CHAT BOT (ISOLÉ PAR UTILISATEUR)
      ====================== */
   const chatBox = document.getElementById("chat-box");
   const input = document.getElementById("chat-input");
@@ -62,7 +62,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!msg) return;
 
     input.value = "";
-
     history.push({ role: "user", text: msg });
     localStorage.setItem(CHAT_KEY, JSON.stringify(history));
     addBubble(msg, "user");
@@ -78,10 +77,10 @@ document.addEventListener("DOMContentLoaded", () => {
         })
       });
 
-      if (!res.ok) throw new Error("backend error");
+      if (!res.ok) throw new Error();
 
       const data = await res.json();
-      const reply = data.reply || "Erreur : réponse vide.";
+      const reply = data.reply || "Réponse vide.";
 
       history.push({ role: "bot", text: reply });
       localStorage.setItem(CHAT_KEY, JSON.stringify(history));
@@ -91,70 +90,29 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  sendBtn.addEventListener("click", sendMessage);
+  sendBtn.onclick = sendMessage;
   input.addEventListener("keydown", e => {
     if (e.key === "Enter") sendMessage();
   });
 
   /* ======================
-     VIDEO (OPTIONNEL – inchangé)
-     ====================== */
-  const startVideoBtn = document.getElementById("start-video");
-  const stopVideoBtn = document.getElementById("stop-video");
-
-  let recorder, chunks = [];
-
-  if (startVideoBtn && stopVideoBtn) {
-    startVideoBtn.onclick = async () => {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true
-      });
-      recorder = new MediaRecorder(stream);
-      chunks = [];
-      recorder.ondataavailable = e => chunks.push(e.data);
-      recorder.start();
-      startVideoBtn.disabled = true;
-      stopVideoBtn.disabled = false;
-    };
-
-    stopVideoBtn.onclick = () => {
-      recorder.stop();
-      recorder.onstop = async () => {
-        const blob = new Blob(chunks, { type: "video/webm" });
-        const fd = new FormData();
-        fd.append("video", blob);
-
-        await fetch(C.UPLOAD_URL, {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-          body: fd
-        });
-
-        addBubble("🎥 Vidéo envoyée.", "user");
-      };
-
-      startVideoBtn.disabled = false;
-      stopVideoBtn.disabled = true;
-    };
-  }
-
-  /* ======================
-     LOGOUT (CORRECTION CRITIQUE)
+     LOGOUT (PROPRE)
      ====================== */
   const logoutBtn = document.getElementById("logout-btn");
 
-  if (logoutBtn) {
-    logoutBtn.addEventListener("click", () => {
-      // Supprime UNIQUEMENT les données de l'utilisateur courant
-      localStorage.removeItem(C.TOKEN_KEY);
-      localStorage.removeItem(C.USER_EMAIL_KEY);
-      localStorage.removeItem(C.PARTICIPANT_KEY);
-      localStorage.removeItem(CHAT_KEY);
-      localStorage.removeItem("pv_active_tab");
-
-      // Redirection propre
-      window.location.href = "index.html";
+  logoutBtn.onclick = () => {
+    Object.keys(localStorage).forEach(key => {
+      if (
+        key === C.TOKEN_KEY ||
+        key === C.USER_EMAIL_KEY ||
+        key === C.PARTICIPANT_KEY ||
+        key === "pv_active_tab" ||
+        key.startsWith("pv_chat_history_")
+      ) {
+        localStorage.removeItem(key);
+      }
     });
-  }
+
+    window.location.replace("index.html");
+  };
 });
