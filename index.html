@@ -2,69 +2,213 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
+  <title>Patient virtuel – Connexion</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Patient virtuel – Accueil</title>
 
-  <!-- CSS principal -->
+  <!-- CSS global existant -->
   <link rel="stylesheet" href="style.css" />
+
+  <!-- CSS AUTH ISOLÉ -->
+  <style>
+    body {
+      margin: 0;
+      font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      height: 100vh;
+      background: url("./asset/image_out.png") center / cover no-repeat fixed;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(
+        to bottom,
+        rgba(15, 25, 55, 0.75),
+        rgba(255, 255, 255, 0.55)
+      );
+      z-index: 0;
+    }
+
+    .auth-wrapper {
+      position: relative;
+      z-index: 1;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .auth-card {
+      width: 100%;
+      max-width: 520px;
+      padding: 48px 52px;
+      border-radius: 22px;
+      background: rgba(20, 30, 60, 0.55);
+      backdrop-filter: blur(16px);
+      color: white;
+    }
+
+    .auth-title {
+      font-size: 42px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .auth-subtitle {
+      font-size: 18px;
+      opacity: 0.85;
+      margin-bottom: 36px;
+    }
+
+    .auth-tabs {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .auth-tab {
+      padding: 10px 18px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.25);
+      background: transparent;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .auth-tab.active {
+      background: linear-gradient(135deg, #4f7cff, #6ba3ff);
+      border: none;
+    }
+
+    .auth-form {
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    .auth-field label {
+      font-size: 14px;
+      opacity: 0.85;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .auth-field input {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 12px;
+      border: none;
+      font-size: 15px;
+    }
+
+    .auth-button {
+      margin-top: 16px;
+      padding: 16px;
+      border-radius: 14px;
+      border: none;
+      font-size: 16px;
+      font-weight: 600;
+      color: white;
+      background: linear-gradient(135deg, #4f7cff, #6ba3ff);
+      cursor: pointer;
+    }
+
+    .auth-note {
+      margin-top: 28px;
+      font-size: 13px;
+      opacity: 0.7;
+      line-height: 1.6;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
 </head>
 
 <body>
-  <!-- Background -->
-  <div class="app-bg"></div>
+  <div class="auth-wrapper">
+    <div class="auth-card">
 
-  <!-- Conteneur principal -->
-  <div class="auth-container">
+      <div class="auth-title">Bienvenue</div>
+      <div class="auth-subtitle">
+        Connectez-vous ou créez un compte pour accéder à la plateforme
+      </div>
 
-    <!-- Titre -->
-    <h1 class="auth-title">Bienvenue</h1>
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="loginTab">Connexion</button>
+        <button class="auth-tab" id="registerTab">Créer un compte</button>
+      </div>
 
-    <p class="auth-subtitle">
-      Connectez-vous ou créez un compte pour accéder à la plateforme
-    </p>
+      <!-- LOGIN -->
+      <form class="auth-form" id="loginForm">
+        <div class="auth-field">
+          <label>Adresse courriel</label>
+          <input type="email" id="loginEmail" required />
+        </div>
 
-    <!-- Onglets -->
-    <div class="auth-tabs">
-      <button class="tab active" data-mode="login">Connexion</button>
-      <button class="tab" data-mode="register">Créer un compte</button>
+        <div class="auth-field">
+          <label>Mot de passe</label>
+          <input type="password" id="loginPassword" required />
+        </div>
+
+        <button class="auth-button" type="submit">Se connecter</button>
+      </form>
+
+      <!-- REGISTER -->
+      <form class="auth-form hidden" id="registerForm">
+        <div class="auth-field">
+          <label>Adresse courriel</label>
+          <input type="email" id="registerEmail" required />
+        </div>
+
+        <div class="auth-field">
+          <label>Mot de passe</label>
+          <input type="password" id="registerPassword" required />
+        </div>
+
+        <button class="auth-button" type="submit">Créer le compte</button>
+      </form>
+
+      <div class="auth-note">
+        Utilisation académique uniquement.<br />
+        Aucune donnée personnelle réelle ne doit être utilisée.
+      </div>
+
     </div>
-
-    <!-- Formulaire -->
-    <form class="login-form">
-
-      <div class="field">
-        <label for="email">Adresse courriel</label>
-        <input
-          id="email"
-          type="email"
-          placeholder="ex: prenom.nom@email.com"
-          required
-        />
-      </div>
-
-      <div class="field">
-        <label for="password">Mot de passe</label>
-        <input
-          id="password"
-          type="password"
-          placeholder="••••••••"
-          required
-        />
-      </div>
-
-      <button type="submit" class="login-btn">
-        Se connecter
-      </button>
-    </form>
-
-    <!-- Note -->
-    <p class="auth-note">
-      Utilisation académique uniquement.<br />
-      Aucune donnée personnelle réelle ne doit être utilisée.
-    </p>
   </div>
 
   <!-- JS -->
-  <script src="login.js"></script>
+  <script>
+    const loginTab = document.getElementById("loginTab");
+    const registerTab = document.getElementById("registerTab");
+    const loginForm = document.getElementById("loginForm");
+    const registerForm = document.getElementById("registerForm");
+
+    loginTab.onclick = () => {
+      loginTab.classList.add("active");
+      registerTab.classList.remove("active");
+      loginForm.classList.remove("hidden");
+      registerForm.classList.add("hidden");
+    };
+
+    registerTab.onclick = () => {
+      registerTab.classList.add("active");
+      loginTab.classList.remove("active");
+      registerForm.classList.remove("hidden");
+      loginForm.classList.add("hidden");
+    };
+
+    loginForm.onsubmit = async (e) => {
+      e.preventDefault();
+      alert("Connexion backend à brancher");
+    };
+
+    registerForm.onsubmit = async (e) => {
+      e.preventDefault();
+      alert("Création de compte backend à brancher");
+    };
+  </script>
 </body>
 </html>
