@@ -3,71 +3,63 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Patient virtuel – Identification</title>
+  <title>Patient virtuel – Connexion</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="app-bg" id="app-bg"></div>
+  <div class="bg" id="app-bg"></div>
 
-  <div class="app-shell">
-    <div class="app-card">
-      <section class="welcome" id="welcome-screen">
-        <header class="welcome-header">
-          <div class="brand">
-            <div class="brand-mark"></div>
-            <div class="brand-text">
-              <div class="brand-title">Patient virtuel</div>
-              <div class="brand-subtitle">Projet de recherche · Simulation clinique</div>
-            </div>
+  <main class="auth-shell">
+    <section class="card auth-card">
+      <header class="card-header">
+        <div class="brand">
+          <div class="brand-mark"></div>
+          <div>
+            <div class="brand-title">Patient virtuel</div>
+            <div class="brand-subtitle">Plateforme · Simulation clinique</div>
           </div>
-        </header>
+        </div>
+      </header>
 
-        <div class="welcome-body">
-          <h1 class="welcome-title">Bienvenue</h1>
-          <p class="welcome-lead">
-            Vous allez interagir avec un patient virtuel (LLM) pour pratiquer l’entrevue clinique.
-          </p>
+      <div class="card-body">
+        <h1 class="h1">Connexion</h1>
+        <p class="muted">
+          Crée un compte, puis connecte-toi. Ensuite tu arrives sur le dashboard.
+        </p>
 
-          <div class="section">
-            <h2 class="section-title">Rôle de l’outil</h2>
-            <ul class="section-list">
-              <li>Simulation de patient pour pratiquer l’anamnèse.</li>
-              <li>Interaction textuelle (caméra optionnelle dans l’écran de chat).</li>
-              <li>Ne remplace pas une évaluation clinique réelle.</li>
-            </ul>
-          </div>
-
-          <div class="section">
-            <h2 class="section-title">Confidentialité</h2>
-            <p class="section-text">
-              N’entrez pas d’informations personnelles identifiables. Utilisez un identifiant (ex: <strong>P001</strong>).
-            </p>
-          </div>
-
-          <div class="form-grid">
-            <div class="field">
-              <label class="field-label" for="participant-id">Identifiant participant</label>
-              <input class="field-input" id="participant-id" type="text" placeholder="Ex: P001" autocomplete="off" maxlength="40" />
-              <div class="field-hint">Lettres/chiffres, sans espaces.</div>
-            </div>
-          </div>
-
-          <div class="actions">
-            <button class="btn btn-primary" id="accept-btn" type="button">Accepter et commencer</button>
-          </div>
-
-          <p class="error" id="welcome-error" aria-live="polite"></p>
+        <div class="tabs">
+          <button class="tab active" id="tab-login" type="button">Se connecter</button>
+          <button class="tab" id="tab-register" type="button">Créer un compte</button>
         </div>
 
-        <footer class="welcome-footer">
-          <div class="footer-note">La caméra est facultative. Vous pouvez faire l’activité uniquement en texte.</div>
-        </footer>
-      </section>
-    </div>
-  </div>
+        <div class="form">
+          <label class="label" for="email">Email</label>
+          <input class="input" id="email" type="email" placeholder="ex: test@example.com" autocomplete="email" />
 
-  <!-- ✅ IMPORTANT: config.js AVANT welcome.js -->
+          <label class="label" for="password">Mot de passe</label>
+          <input class="input" id="password" type="password" placeholder="Mot de passe" autocomplete="current-password" />
+
+          <div id="confirm-wrap" style="display:none;">
+            <label class="label" for="password2">Confirmer le mot de passe</label>
+            <input class="input" id="password2" type="password" placeholder="Confirmer" autocomplete="new-password" />
+          </div>
+
+          <div class="row">
+            <button class="btn primary" id="submit" type="button">Continuer</button>
+            <button class="btn ghost" id="clear" type="button">Effacer</button>
+          </div>
+
+          <p class="error" id="err" aria-live="polite"></p>
+        </div>
+
+        <div class="note">
+          <strong>Confidentialité :</strong> n’entre pas d’informations personnelles identifiables dans le chat.
+        </div>
+      </div>
+    </section>
+  </main>
+
   <script src="config.js"></script>
-  <script src="welcome.js"></script>
+  <script src="auth.js"></script>
 </body>
 </html>
