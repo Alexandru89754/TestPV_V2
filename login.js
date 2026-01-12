@@ -1,38 +1,52 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const tabLogin = document.getElementById("tab-login");
-  const tabRegister = document.getElementById("tab-register");
-  const submitBtn = document.getElementById("submit-btn");
-  const form = document.getElementById("auth-form");
-  const errorEl = document.getElementById("auth-error");
+  const tabs = document.querySelectorAll(".tab");
+  const form = document.querySelector(".login-form");
+  const submitBtn = document.querySelector(".login-btn");
 
   let mode = "login"; // login | register
 
-  function setMode(newMode) {
+  function switchMode(newMode) {
     mode = newMode;
-    tabLogin.classList.toggle("active", mode === "login");
-    tabRegister.classList.toggle("active", mode === "register");
-    submitBtn.textContent = mode === "login" ? "Se connecter" : "Créer un compte";
-    errorEl.textContent = "";
+
+    tabs.forEach(tab => {
+      tab.classList.toggle("active", tab.dataset.mode === mode);
+    });
+
+    if (mode === "login") {
+      submitBtn.textContent = "Se connecter";
+    } else {
+      submitBtn.textContent = "Créer le compte";
+    }
   }
 
-  tabLogin.addEventListener("click", () => setMode("login"));
-  tabRegister.addEventListener("click", () => setMode("register"));
+  // Initialisation
+  tabs[0].dataset.mode = "login";
+  tabs[1].dataset.mode = "register";
+  switchMode("login");
+
+  tabs.forEach(tab => {
+    tab.addEventListener("click", () => {
+      switchMode(tab.dataset.mode);
+    });
+  });
 
   form.addEventListener("submit", (e) => {
     e.preventDefault();
 
-    const email = document.getElementById("email").value.trim();
-    const password = document.getElementById("password").value.trim();
+    const email = form.querySelector('input[type="email"]').value.trim();
+    const password = form.querySelector('input[type="password"]').value.trim();
 
     if (!email || !password) {
-      errorEl.textContent = "Veuillez remplir tous les champs.";
+      alert("Veuillez remplir tous les champs.");
       return;
     }
 
-    // ⚠️ Backend sera branché PLUS TARD
-    console.log("MODE:", mode, email, password);
-
-    // Temporaire
-    window.location.href = "home.html";
+    if (mode === "login") {
+      console.log("LOGIN", { email, password });
+      alert("Connexion simulée (backend à venir)");
+    } else {
+      console.log("REGISTER", { email, password });
+      alert("Création de compte simulée (backend à venir)");
+    }
   });
 });
