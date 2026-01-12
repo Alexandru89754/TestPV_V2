@@ -2,42 +2,117 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>Patient virtuel · Home</title>
+  <title>Patient virtuel · Accueil</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link rel="stylesheet" href="style.css" />
+
+  <style>
+    /* ===== BACKGROUND ===== */
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: url("./asset/image_in.png") center / cover no-repeat fixed;
+      overflow-y: auto;
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(255,255,255,0.55);
+      backdrop-filter: blur(6px);
+      z-index: 0;
+    }
+
+    /* ===== LAYOUT ===== */
+    .app-container {
+      position: relative;
+      z-index: 1;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 40px 20px 80px;
+    }
+
+    /* ===== NAV ===== */
+    .nav {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 40px;
+    }
+
+    .nav-btn {
+      flex: 1;
+      padding: 14px;
+      font-size: 15px;
+      font-weight: 600;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      background: #e5e7eb;
+    }
+
+    .nav-btn.active {
+      background: #2f5bea;
+      color: white;
+    }
+
+    /* ===== SECTIONS ===== */
+    .section {
+      display: none;
+      background: rgba(255,255,255,0.92);
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+    }
+
+    .section.active {
+      display: block;
+    }
+
+    h1 {
+      margin-top: 0;
+    }
+  </style>
 </head>
 <body>
 
-  <h1>Bienvenue</h1>
-  <p id="user"></p>
+  <div class="overlay"></div>
 
-  <button id="logout">Déconnexion</button>
+  <div class="app-container">
+
+    <!-- NAVIGATION -->
+    <div class="nav">
+      <button class="nav-btn" data-target="friends">Amis</button>
+      <button class="nav-btn" data-target="chat">Chat_bot_Beta</button>
+      <button class="nav-btn" data-target="projects">Projets</button>
+      <button class="nav-btn" data-target="forum">Forum</button>
+    </div>
+
+    <!-- SECTIONS (VIDES PAR DÉFAUT) -->
+    <section id="friends" class="section">
+      <h1>Amis</h1>
+      <p>Gestion des amis, demandes et discussions privées.</p>
+    </section>
+
+    <section id="chat" class="section">
+      <h1>Chat_bot_Beta</h1>
+      <p>Interaction avec le patient virtuel.</p>
+    </section>
+
+    <section id="projects" class="section">
+      <h1>Projets</h1>
+      <p>Suivi des projets et recherches.</p>
+    </section>
+
+    <section id="forum" class="section">
+      <h1>Forum</h1>
+      <p>Discussions générales entre utilisateurs.</p>
+    </section>
+
+  </div>
 
   <script src="config.js"></script>
-  <script>
-    const token = localStorage.getItem(CONFIG.TOKEN_KEY);
-
-    if (!token) {
-      window.location.href = "index.html";
-    }
-
-    fetch(CONFIG.AUTH_ME_URL, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(r => r.ok ? r.json() : Promise.reject())
-      .then(me => {
-        document.getElementById("user").textContent =
-          "Connecté en tant que " + me.email;
-      })
-      .catch(() => {
-        localStorage.removeItem(CONFIG.TOKEN_KEY);
-        window.location.href = "index.html";
-      });
-
-    document.getElementById("logout").onclick = () => {
-      localStorage.removeItem(CONFIG.TOKEN_KEY);
-      window.location.href = "index.html";
-    };
-  </script>
+  <script src="app.js"></script>
 
 </body>
 </html>
