@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Patient virtuel – Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="bg" id="app-bg"></div>
+
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="sidebar-top">
+        <div class="brand small">
+          <div class="brand-mark"></div>
+          <div>
+            <div class="brand-title">Patient virtuel</div>
+            <div class="brand-subtitle" id="user-pill">—</div>
+          </div>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <button class="nav-btn active" data-view="view-profile" type="button">Mon profil</button>
+        <button class="nav-btn" data-view="view-friends" type="button">Mes amis</button>
+        <button class="nav-btn" data-view="view-forum" type="button">Discussion</button>
+        <button class="nav-btn" data-view="view-updates" type="button">Mise à jour recherche</button>
+        <button class="nav-btn beta" data-view="view-ai" type="button">Outil_AI_Beta</button>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <button class="btn ghost full" id="logout-btn" type="button">Déconnexion</button>
+      </div>
+    </aside>
+
+    <main class="content">
+      <!-- ====== PROFILE ====== -->
+      <section class="panel" id="view-profile">
+        <header class="panel-header">
+          <h1 class="h1">Mon profil</h1>
+          <p class="muted">Modifier ton avatar (URL) et ta bio.</p>
+        </header>
+
+        <div class="grid2">
+          <div class="card">
+            <div class="card-body">
+              <div class="avatar-row">
+                <img id="avatar-preview" class="avatar" src="" alt="Avatar" />
+                <div>
+                  <div class="h2" id="display-name">—</div>
+                  <div class="muted" id="email-line">—</div>
+                </div>
+              </div>
+
+              <label class="label" for="avatar-url">Avatar URL</label>
+              <input class="input" id="avatar-url" type="text" placeholder="https://..." />
+
+              <label class="label" for="bio">Bio</label>
+              <textarea class="textarea" id="bio" placeholder="Ta bio..." rows="5"></textarea>
+
+              <div class="row">
+                <button class="btn primary" id="save-profile" type="button">Enregistrer</button>
+                <button class="btn ghost" id="refresh-profile" type="button">Rafraîchir</button>
+              </div>
+
+              <p class="error" id="profile-err" aria-live="polite"></p>
+              <p class="ok" id="profile-ok" aria-live="polite"></p>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-body">
+              <h2 class="h2">Identifiant participant (P001)</h2>
+              <p class="muted">
+                Sert à tagger les conversations du chatbot. Tu peux le changer quand tu veux.
+              </p>
+
+              <label class="label" for="participant-id">Identifiant participant</label>
+              <input class="input" id="participant-id" type="text" placeholder="Ex: P001" maxlength="40" />
+
+              <div class="row">
+                <button class="btn primary" id="save-participant" type="button">Sauvegarder</button>
+                <button class="btn ghost" id="clear-participant" type="button">Effacer</button>
+              </div>
+
+              <p class="error" id="participant-err" aria-live="polite"></p>
+              <p class="ok" id="participant-ok" aria-live="polite"></p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== FRIENDS ====== -->
+      <section class="panel hidden" id="view-friends">
+        <header class="panel-header">
+          <h1 class="h1">Mes amis</h1>
+          <p class="muted">Rechercher des utilisateurs, gérer demandes et amis.</p>
+        </header>
+
+        <div class="grid2">
+          <div class="card">
+            <div class="card-body">
+              <h2 class="h2">Rechercher</h2>
+              <p class="muted">Recherche par email exact (MVP). Ex: test2@example.com</p>
+
+              <label class="label" for="friend-email">Email de l’utilisateur</label>
+              <input class="input" id="friend-email" type="email" placeholder="ex: test2@example.com" />
+
+              <button class="btn primary" id="send-request" type="button">Envoyer demande d’ami</button>
+              <p class="error" id="friend-search-err" aria-live="polite"></p>
+              <p class="ok" id="friend-search-ok" aria-live="polite"></p>
+
+              <hr class="sep" />
+
+              <h2 class="h2">Mes amis</h2>
+              <div class="list" id="friends-list"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-body">
+              <h2 class="h2">Demandes reçues</h2>
+              <div class="list" id="incoming-list"></div>
+
+              <hr class="sep" />
+
+              <h2 class="h2">Demandes envoyées</h2>
+              <div class="list" id="outgoing-list"></div>
+
+              <p class="error" id="friends-err" aria-live="polite"></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:14px;">
+          <div class="card-body">
+            <h2 class="h2">Chat avec un ami (MVP)</h2>
+            <p class="muted">
+              Version MVP: chat stocké dans TON navigateur (localStorage). Plus tard on peut le rendre serveur.
+            </p>
+
+            <div class="grid2">
+              <div>
+                <label class="label" for="chat-friend-id">ID ami (user_id)</label>
+                <input class="input" id="chat-friend-id" type="number" min="1" placeholder="ex: 7" />
+
+                <button class="btn ghost" id="load-friend-chat" type="button">Ouvrir discussion</button>
+              </div>
+
+              <div>
+                <label class="label" for="friend-chat-input">Message</label>
+                <input class="input" id="friend-chat-input" type="text" placeholder="Écris..." />
+                <button class="btn primary" id="send-friend-chat" type="button">Envoyer</button>
+              </div>
+            </div>
+
+            <div class="chatbox" id="friend-chatbox"></div>
+            <p class="error" id="friend-chat-err" aria-live="polite"></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== FORUM ====== -->
+      <section class="panel hidden" id="view-forum">
+        <header class="panel-header">
+          <h1 class="h1">Discussion</h1>
+          <p class="muted">Forum général: publier, modifier, commenter.</p>
+        </header>
+
+        <div class="grid2">
+          <div class="card">
+            <div class="card-body">
+              <h2 class="h2">Créer un post</h2>
+
+              <label class="label" for="post-title">Titre</label>
+              <input class="input" id="post-title" type="text" placeholder="Titre..." />
+
+              <label class="label" for="post-body">Contenu</label>
+              <textarea class="textarea" id="post-body" rows="6" placeholder="Texte..."></textarea>
+
+              <button class="btn primary" id="create-post" type="button">Publier</button>
+              <p class="error" id="forum-err" aria-live="polite"></p>
+              <p class="ok" id="forum-ok" aria-live="polite"></p>
+
+              <hr class="sep" />
+
+              <h2 class="h2">Posts</h2>
+              <div class="list" id="posts-list"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-body">
+              <h2 class="h2">Post sélectionné</h2>
+              <div id="selected-post" class="muted">Sélectionne un post à gauche.</div>
+
+              <div id="comments-wrap" class="hidden">
+                <hr class="sep" />
+
+                <h2 class="h2">Commentaires</h2>
+                <div class="list" id="comments-list"></div>
+
+                <label class="label" for="comment-body">Ajouter un commentaire</label>
+                <textarea class="textarea" id="comment-body" rows="4" placeholder="Ton commentaire..."></textarea>
+                <button class="btn primary" id="add-comment" type="button">Envoyer</button>
+
+                <p class="error" id="comments-err" aria-live="polite"></p>
+                <p class="ok" id="comments-ok" aria-live="polite"></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== UPDATES ====== -->
+      <section class="panel hidden" id="view-updates">
+        <header class="panel-header">
+          <h1 class="h1">Mise à jour recherche</h1>
+          <p class="muted">Placeholder pour l’instant.</p>
+        </header>
+
+        <div class="card">
+          <div class="card-body">
+            <pre class="codebox">print hello wrld</pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== AI TOOL ====== -->
+      <section class="panel hidden" id="view-ai">
+        <header class="panel-header">
+          <h1 class="h1">Outil_AI_Beta</h1>
+          <p class="muted">Le chatbot est disponible ici uniquement.</p>
+        </header>
+
+        <div class="card">
+          <div class="card-body">
+            <div class="row" style="justify-content:space-between; align-items:center;">
+              <div class="muted" id="ai-participant-pill">Participant: —</div>
+              <div class="muted" id="ai-status">Prêt</div>
+            </div>
+
+            <div class="chatbox big" id="ai-chatbox"></div>
+
+            <div class="row">
+              <input class="input" id="ai-input" type="text" placeholder="Écris ton message..." />
+              <button class="btn primary" id="ai-send" type="button">Envoyer</button>
+            </div>
+
+            <p class="error" id="ai-err" aria-live="polite"></p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
