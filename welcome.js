@@ -1,6 +1,14 @@
 document.addEventListener("DOMContentLoaded", () => {
+  // -------------------------
+  // CONFIG (depuis config.js)
+  // -------------------------
+  const CFG = window.__PV_CONFIG__ || {};
+  const PARTICIPANT_KEY = String(CFG.PARTICIPANT_KEY || "pv_participant_id");
+
+  // -------------------------
+  // UI constants
+  // -------------------------
   const BG_WELCOME = "./asset/image_out.png";
-  const PARTICIPANT_KEY = "pv_participant_id";
 
   const appBg = document.getElementById("app-bg");
   const participantInput = document.getElementById("participant-id");
@@ -26,7 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const pid = normalizeParticipantId(participantInput.value);
 
     if (!isValidParticipantId(pid)) {
-      welcomeError.textContent = "Identifiant invalide (ex: P001).";
+      if (welcomeError) welcomeError.textContent = "Identifiant invalide (ex: P001).";
       participantInput.focus();
       return;
     }
