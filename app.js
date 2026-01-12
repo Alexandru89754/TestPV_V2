@@ -5,69 +5,76 @@ document.addEventListener("DOMContentLoaded", () => {
      AUTH CHECK
      ====================== */
   const token = localStorage.getItem(C.TOKEN_KEY);
-  const userEmail = localStorage.getItem(C.USER_EMAIL_KEY);
-
-  if (!token || !userEmail) {
+  if (!token) {
     window.location.href = "index.html";
     return;
   }
 
   /* ======================
-     NAV + STATE
+     NAVIGATION
      ====================== */
   const buttons = document.querySelectorAll(".nav-btn");
   const sections = document.querySelectorAll(".section");
 
   function showSection(id) {
-    if (!id) return;
-    sections.forEach(s => s.classList.toggle("active", s.id === id));
-    buttons.forEach(b => b.classList.toggle("active", b.dataset.target === id));
+    sections.forEach(section => {
+      section.classList.toggle("active", section.id === id);
+    });
+
+    buttons.forEach(btn => {
+      btn.classList.toggle("active", btn.dataset.target === id);
+    });
+
     localStorage.setItem("pv_active_tab", id);
   }
 
-  buttons.forEach(b =>
-    b.addEventListener("click", () => showSection(b.dataset.target))
-  );
+  buttons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      showSection(btn.dataset.target);
+    });
+  });
 
-  showSection(localStorage.getItem("pv_active_tab") || "section-chat");
+  // ✅ section par défaut (ou restaurée)
+  const savedTab = localStorage.getItem("pv_active_tab");
+  const initialTab =
+    savedTab && document.getElementById(savedTab)
+      ? savedTab
+      : "chat";
+
+  showSection(initialTab);
 
   /* ======================
-     LOGOUT (CRITIQUE)
+     LOGOUT
      ====================== */
   const logoutBtn = document.getElementById("logout-btn");
-
-  logoutBtn?.addEventListener("click", async () => {
+  logoutBtn.addEventListener("click", async () => {
     try {
       await fetch(C.AUTH_LOGOUT_URL, {
         method: "POST",
-        headers: { "Authorization": `Bearer ${token}` }
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
       });
     } catch {}
 
-    // 🔥 nettoyage TOTAL
-    Object.keys(localStorage)
-      .filter(k => k.startsWith("pv_"))
-      .forEach(k => localStorage.removeItem(k));
+    localStorage.removeItem(C.TOKEN_KEY);
+    localStorage.removeItem(C.USER_EMAIL_KEY);
+    localStorage.removeItem("pv_active_tab");
 
     window.location.href = "index.html";
   });
 
   /* ======================
-     CHAT BOT (USER-SCOPED)
+     CHAT BOT
      ====================== */
   const chatBox = document.getElementById("chat-box");
-  const input = document.getElementById("chat-input");
+  const chatInput = document.getElementById("chat-input");
   const sendBtn = document.getElementById("send-btn");
 
-  // 🔐 conversation isolée par utilisateur
-  const CHAT_KEY = `pv_chat_history_${userEmail}`;
+  const userEmail = localStorage.getItem(C.USER_EMAIL_KEY);
+  const CHAT_KEY = `pv_chat_${userEmail}`;
 
-  let history = [];
-  try {
-    history = JSON.parse(localStorage.getItem(CHAT_KEY)) || [];
-  } catch {
-    history = [];
-  }
+  let history = JSON.parse(localStorage.getItem(CHAT_KEY) || "[]");
 
   function addBubble(text, role) {
     const div = document.createElement("div");
@@ -85,14 +92,14 @@ document.addEventListener("DOMContentLoaded", () => {
   renderHistory();
 
   async function sendMessage() {
-    const msg = input.value.trim();
-    if (!msg) return;
+    const text = chatInput.value.trim();
+    if (!text) return;
 
-    input.value = "";
-    addBubble(msg, "user");
+    chatInput.value = "";
 
-    history.push({ role: "user", text: msg });
+    history.push({ role: "user", text });
     localStorage.setItem(CHAT_KEY, JSON.stringify(history));
+    addBubble(text, "user");
 
     try {
       const res = await fetch(C.CHAT_URL, {
@@ -102,40 +109,43 @@ document.addEventListener("DOMContentLoaded", () => {
           "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify({
-          message: msg,
-          userId: userEmail // 🔑 OBLIGATOIRE POUR TON BACKEND
+          message: text,
+          userId: userEmail
         })
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || "Erreur backend");
-
       const reply = data.reply || "Réponse vide.";
-      addBubble(reply, "bot");
 
       history.push({ role: "bot", text: reply });
       localStorage.setItem(CHAT_KEY, JSON.stringify(history));
+      addBubble(reply, "bot");
 
-    } catch (e) {
-      addBubble("❌ Erreur backend inaccessible.", "bot");
+    } catch {
+      addBubble("❌ Erreur : backend inaccessible.", "bot");
     }
   }
 
-  sendBtn?.addEventListener("click", sendMessage);
-  input?.addEventListener("keydown", e => {
+  sendBtn.addEventListener("click", sendMessage);
+  chatInput.addEventListener("keydown", e => {
     if (e.key === "Enter") sendMessage();
   });
 
   /* ======================
-     VIDEO (OPTIONNEL)
+     VIDEO
      ====================== */
   const startVideoBtn = document.getElementById("start-video");
   const stopVideoBtn = document.getElementById("stop-video");
 
-  let recorder, chunks = [];
+  let recorder;
+  let chunks = [];
 
-  startVideoBtn?.addEventListener("click", async () => {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+  startVideoBtn.onclick = async () => {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: true,
+      audio: true
+    });
+
     recorder = new MediaRecorder(stream);
     chunks = [];
 
@@ -144,9 +154,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     startVideoBtn.disabled = true;
     stopVideoBtn.disabled = false;
-  });
+  };
 
-  stopVideoBtn?.addEventListener("click", () => {
+  stopVideoBtn.onclick = () => {
     recorder.stop();
     recorder.onstop = async () => {
       const blob = new Blob(chunks, { type: "video/webm" });
@@ -154,19 +164,18 @@ document.addEventListener("DOMContentLoaded", () => {
       fd.append("video", blob);
       fd.append("userId", userEmail);
 
-      try {
-        await fetch(C.UPLOAD_URL, {
-          method: "POST",
-          headers: { "Authorization": `Bearer ${token}` },
-          body: fd
-        });
-        addBubble("🎥 Vidéo envoyée.", "user");
-      } catch {
-        addBubble("❌ Échec upload vidéo.", "bot");
-      }
+      await fetch(C.UPLOAD_URL, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        },
+        body: fd
+      });
+
+      addBubble("🎥 Vidéo envoyée.", "user");
     };
 
     startVideoBtn.disabled = false;
     stopVideoBtn.disabled = true;
-  });
+  };
 });
