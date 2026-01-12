@@ -136,31 +136,24 @@
     .btn.ghost { background:#e5e7eb; }
   </style>
 </head>
+
 <body>
 
   <div class="overlay"></div>
 
   <div class="app-container">
 
-    <!-- TOP BAR -->
     <div class="top-bar">
       <h2>Patient virtuel</h2>
       <button id="logout-btn" class="logout-btn">Déconnexion</button>
     </div>
 
-    <!-- NAV -->
     <div class="nav">
-      <button class="nav-btn" data-target="friends">Amis</button>
       <button class="nav-btn" data-target="chat">Chat_bot_Beta</button>
-      <button class="nav-btn" data-target="projects">Projets</button>
       <button class="nav-btn" data-target="forum">Forum</button>
+      <button class="nav-btn" data-target="projects">Projets</button>
+      <button class="nav-btn" data-target="friends">Amis</button>
     </div>
-
-    <!-- AMIS -->
-    <section id="friends" class="section">
-      <h1>Amis</h1>
-      <p>Fonctionnalité à venir.</p>
-    </section>
 
     <!-- CHAT -->
     <section id="chat" class="section">
@@ -172,57 +165,46 @@
         <input id="chat-input" class="chat-input" placeholder="Écris ton message…" />
         <button id="send-btn" class="btn primary">Envoyer</button>
       </div>
-
-      <div class="chat-controls">
-        <button id="start-video" class="btn ghost">🎥 Démarrer vidéo</button>
-        <button id="stop-video" class="btn ghost" disabled>⏹ Arrêter & envoyer</button>
-      </div>
-    </section>
-
-    <!-- PROJETS -->
-    <section id="projects" class="section">
-      <h1>Projets</h1>
-      <p>Section projets à venir.</p>
     </section>
 
     <!-- FORUM -->
     <section id="forum" class="section">
       <h1>Forum</h1>
 
-      <div style="display:flex; gap:30px">
+      <h3>Créer un post</h3>
+      <input id="post-title" placeholder="Titre" style="width:100%;padding:10px;margin-bottom:10px">
+      <textarea id="post-body" placeholder="Contenu…" style="width:100%;height:100px"></textarea>
+      <button id="create-post" class="btn primary" style="margin-top:10px">Publier</button>
 
-        <!-- LISTE DES POSTS -->
+      <hr style="margin:30px 0">
+
+      <div style="display:flex; gap:30px">
         <div style="width:40%">
           <h3>Posts</h3>
           <div id="posts-list"></div>
         </div>
 
-        <!-- COMMENTAIRES -->
         <div style="width:60%">
           <h3>Commentaires</h3>
           <div id="comments-list"></div>
 
-          <textarea
-            id="comment-input"
-            placeholder="Écris une réponse…"
-            style="width:100%;margin-top:10px;height:80px"
-          ></textarea>
-
-          <button
-            id="send-comment"
-            class="btn primary"
-            style="margin-top:10px"
-          >
-            Répondre
-          </button>
+          <textarea id="comment-input" placeholder="Répondre…" style="width:100%;height:80px;margin-top:10px"></textarea>
+          <button id="send-comment" class="btn primary" style="margin-top:10px">Répondre</button>
         </div>
-
       </div>
+    </section>
+
+    <section id="projects" class="section">
+      <h1>Projets</h1>
+    </section>
+
+    <section id="friends" class="section">
+      <h1>Amis</h1>
     </section>
 
   </div>
 
-  <script src="./config.js"></script>
-  <script src="./app.js"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
