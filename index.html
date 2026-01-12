@@ -5,14 +5,12 @@
   <title>Patient virtuel – Connexion</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- CSS global existant -->
   <link rel="stylesheet" href="style.css" />
 
-  <!-- CSS AUTH ISOLÉ -->
   <style>
     body {
       margin: 0;
-      font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: Inter, system-ui, sans-serif;
       height: 100vh;
       background: url("./asset/image_out.png") center / cover no-repeat fixed;
     }
@@ -23,8 +21,8 @@
       inset: 0;
       background: linear-gradient(
         to bottom,
-        rgba(15, 25, 55, 0.75),
-        rgba(255, 255, 255, 0.55)
+        rgba(15, 30, 70, 0.75),
+        rgba(255, 255, 255, 0.6)
       );
       z-index: 0;
     }
@@ -39,19 +37,18 @@
     }
 
     .auth-card {
-      width: 100%;
-      max-width: 520px;
-      padding: 48px 52px;
-      border-radius: 22px;
-      background: rgba(20, 30, 60, 0.55);
+      width: 520px;
+      padding: 48px;
+      border-radius: 24px;
+      background: rgba(25, 35, 75, 0.6);
       backdrop-filter: blur(16px);
       color: white;
     }
 
     .auth-title {
-      font-size: 42px;
+      font-size: 40px;
       font-weight: 700;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
 
     .auth-subtitle {
@@ -73,7 +70,6 @@
       background: transparent;
       color: white;
       cursor: pointer;
-      font-size: 14px;
     }
 
     .auth-tab.active {
@@ -90,8 +86,8 @@
     .auth-field label {
       font-size: 14px;
       opacity: 0.85;
-      display: block;
       margin-bottom: 6px;
+      display: block;
     }
 
     .auth-field input {
@@ -112,6 +108,12 @@
       color: white;
       background: linear-gradient(135deg, #4f7cff, #6ba3ff);
       cursor: pointer;
+    }
+
+    .auth-error {
+      margin-top: 14px;
+      color: #ffb4b4;
+      font-size: 14px;
     }
 
     .auth-note {
@@ -154,6 +156,7 @@
         </div>
 
         <button class="auth-button" type="submit">Se connecter</button>
+        <div class="auth-error" id="loginError"></div>
       </form>
 
       <!-- REGISTER -->
@@ -169,6 +172,7 @@
         </div>
 
         <button class="auth-button" type="submit">Créer le compte</button>
+        <div class="auth-error" id="registerError"></div>
       </form>
 
       <div class="auth-note">
@@ -179,8 +183,9 @@
     </div>
   </div>
 
-  <!-- JS -->
   <script>
+    const API_BASE = "https://patient-virtuel-platform-backend.onrender.com";
+
     const loginTab = document.getElementById("loginTab");
     const registerTab = document.getElementById("registerTab");
     const loginForm = document.getElementById("loginForm");
@@ -202,12 +207,52 @@
 
     loginForm.onsubmit = async (e) => {
       e.preventDefault();
-      alert("Connexion backend à brancher");
+      document.getElementById("loginError").textContent = "";
+
+      try {
+        const res = await fetch(`${API_BASE}/auth/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: loginEmail.value,
+            password: loginPassword.value
+          })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data.detail || "Erreur de connexion");
+
+        localStorage.setItem("pv_token", data.access_token);
+        window.location.href = "home.html";
+      } catch (err) {
+        document.getElementById("loginError").textContent = err.message;
+      }
     };
 
     registerForm.onsubmit = async (e) => {
       e.preventDefault();
-      alert("Création de compte backend à brancher");
+      document.getElementById("registerError").textContent = "";
+
+      try {
+        const res = await fetch(`${API_BASE}/auth/register`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: registerEmail.value,
+            password: registerPassword.value
+          })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data.detail || "Erreur création compte");
+
+        alert("Compte créé. Vous pouvez vous connecter.");
+        loginTab.click();
+      } catch (err) {
+        document.getElementById("registerError").textContent = err.message;
+      }
     };
   </script>
 </body>
