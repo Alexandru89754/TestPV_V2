@@ -1,185 +1,58 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<title>Patient Virtuel</title>
+  <meta charset="UTF-8" />
+  <title>Patient virtuel · Accueil</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
-html,body{width:100%;height:100%}
-
-/* ===== GLOBAL BACKGROUND ===== */
-body{
-  background:url("image_out.png") center/cover no-repeat fixed;
-}
-
-/* ===== AUTH OVERLAY ===== */
-#auth-screen{
-  position:fixed;
-  inset:0;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:linear-gradient(
-    rgba(80,120,200,.75),
-    rgba(255,255,255,.65)
-  );
-  z-index:10;
-}
-
-.auth-box{
-  width:380px;
-  padding:40px;
-  background:rgba(255,255,255,.25);
-  backdrop-filter:blur(14px);
-  border-radius:12px;
-}
-
-.auth-box h1{text-align:center;margin-bottom:20px}
-.auth-box input,.auth-box button{
-  width:100%;
-  padding:10px;
-  margin-bottom:12px;
-  border:none;
-  border-radius:4px;
-}
-
-#authMsg{color:red;text-align:center}
-
-/* ===== APP ===== */
-#app{
-  display:none;
-  min-height:100vh;
-  background:url("image_in.png") center/cover no-repeat fixed;
-  display:flex;
-}
-
-/* SIDEBAR */
-.sidebar{
-  width:240px;
-  background:rgba(0,0,0,.6);
-  backdrop-filter:blur(8px);
-  padding:20px;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
-
-.sidebar button{
-  padding:10px;
-  border:none;
-  font-weight:bold;
-  cursor:pointer;
-}
-
-/* MAIN */
-.main{
-  flex:1;
-  padding:40px;
-}
-
-.section{
-  display:none;
-  background:rgba(255,255,255,.9);
-  padding:30px;
-  border-radius:10px;
-}
-
-.section.active{display:block}
-</style>
+  <link rel="stylesheet" href="style.css" />
 </head>
-
 <body>
 
-<!-- AUTH -->
-<div id="auth-screen">
-  <div class="auth-box">
-    <h1>Patient Virtuel</h1>
-    <input id="email" type="email" placeholder="Email">
-    <input id="password" type="password" placeholder="Mot de passe">
-    <button onclick="login()">Connexion</button>
-    <button onclick="register()">Créer un compte</button>
-    <p id="authMsg"></p>
-  </div>
-</div>
+  <!-- BACKGROUND -->
+  <div class="login-bg"></div>
+  <div class="login-overlay"></div>
 
-<!-- APP -->
-<div id="app">
-  <div class="sidebar">
-    <button onclick="showSection('profil')">Mon profil</button>
-    <button onclick="showSection('amis')">Mes amis</button>
-    <button onclick="showSection('discussion')">Discussion</button>
-    <button onclick="showSection('recherche')">Mise à jour recherche</button>
-    <button onclick="showSection('ai')">Outil_AI_BETA</button>
-  </div>
+  <div class="login-wrapper">
+    <div class="login-card">
 
-  <div class="main">
-    <div id="profil" class="section">
-      <h2>Mon profil</h2>
-      <input placeholder="URL avatar">
-      <textarea placeholder="Bio"></textarea>
-    </div>
+      <h1 class="login-title">Patient virtuel</h1>
+      <p class="login-subtitle">
+        Crée un compte ou connecte-toi pour continuer
+      </p>
 
-    <div id="amis" class="section">
-      <h2>Mes amis</h2>
-      <ul>
-        <li>Recherche</li>
-        <li>Liste d’amis</li>
-        <li>Demandes reçues (accepter/refuser)</li>
-        <li>Demandes envoyées</li>
-        <li>Chat clinique</li>
-      </ul>
-    </div>
+      <!-- TABS -->
+      <div class="login-tabs">
+        <button class="tab active" id="tab-login" type="button">Connexion</button>
+        <button class="tab" id="tab-register" type="button">Créer un compte</button>
+      </div>
 
-    <div id="discussion" class="section">
-      <h2>Forum général</h2>
-      <p>Poster, modifier et répondre</p>
-    </div>
+      <!-- FORM -->
+      <form class="login-form" action="javascript:void(0);">
 
-    <div id="recherche" class="section">
-      <pre>print("hello world")</pre>
-    </div>
+        <label>Email</label>
+        <input id="email" type="email" required />
 
-    <div id="ai" class="section">
-      <h2>Outil AI – Patient virtuel</h2>
-      <p>Chatbot chargé ici</p>
+        <label>Mot de passe</label>
+        <input id="password" type="password" required />
+
+        <div id="confirm-wrap" style="display:none;">
+          <label>Confirmer le mot de passe</label>
+          <input id="password2" type="password" />
+        </div>
+
+        <button class="login-btn" id="submit" type="button">
+          Se connecter
+        </button>
+
+        <p id="err" style="color:red;text-align:center;margin-top:10px;"></p>
+      </form>
+
     </div>
   </div>
-</div>
 
-<script>
-/* ===== AUTH ===== */
-async function login(){
-  const { error } = await supabase.auth.signInWithPassword({
-    email: email.value,
-    password: password.value
-  });
-  if(error) authMsg.innerText = error.message;
-}
-
-async function register(){
-  const { error } = await supabase.auth.signUp({
-    email: email.value,
-    password: password.value
-  });
-  if(error) authMsg.innerText = error.message;
-  else authMsg.innerText = "Compte créé. Vérifie ton email.";
-}
-
-/* ===== SESSION LISTENER (CRUCIAL) ===== */
-supabase.auth.onAuthStateChange((event, session)=>{
-  if(session){
-    document.getElementById("auth-screen").style.display="none";
-    document.getElementById("app").style.display="flex";
-  }
-});
-
-/* ===== UI ===== */
-function showSection(id){
-  document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
-}
-</script>
+  <script src="config.js"></script>
+  <script src="auth.js"></script>
 
 </body>
 </html>
