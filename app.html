@@ -1,168 +1,133 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8" />
-  <title>Patient virtuel · Accueil</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+document.addEventListener("DOMContentLoaded", () => {
+  const C = window.CONFIG;
+  const token = localStorage.getItem(C.TOKEN_KEY);
+  if (!token) {
+    window.location.href = "index.html";
+    return;
+  }
 
-  <link rel="stylesheet" href="style.css" />
+  /* ======================
+     NAV + STATE PERSISTENCE
+     ====================== */
+  const buttons = document.querySelectorAll(".nav-btn");
+  const sections = document.querySelectorAll(".section");
 
-  <style>
-    body {
-      margin: 0;
-      min-height: 100vh;
-      background: url("./asset/image_in.png") center / cover no-repeat fixed;
-      overflow-y: auto;
+  function showSection(id) {
+    sections.forEach(s => s.classList.toggle("active", s.id === id));
+    buttons.forEach(b => b.classList.toggle("active", b.dataset.target === id));
+    if (id) localStorage.setItem("pv_active_tab", id);
+  }
+
+  buttons.forEach(b =>
+    b.addEventListener("click", () => showSection(b.dataset.target))
+  );
+
+  showSection(localStorage.getItem("pv_active_tab"));
+
+  /* ======================
+     CHAT BOT
+     ====================== */
+  const chatBox = document.getElementById("chat-box");
+  const input = document.getElementById("chat-input");
+  const sendBtn = document.getElementById("send-btn");
+
+  const CHAT_KEY = "pv_chat_history";
+
+  let history = JSON.parse(localStorage.getItem(CHAT_KEY) || "[]");
+
+  function renderHistory() {
+    chatBox.innerHTML = "";
+    history.forEach(m => addBubble(m.text, m.role));
+  }
+
+  function addBubble(text, role) {
+    const div = document.createElement("div");
+    div.className = `bubble ${role}`;
+    div.textContent = text;
+    chatBox.appendChild(div);
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+
+  renderHistory();
+
+  async function sendMessage() {
+    const msg = input.value.trim();
+    if (!msg) return;
+
+    input.value = "";
+
+    history.push({ role: "user", text: msg });
+    localStorage.setItem(CHAT_KEY, JSON.stringify(history));
+    addBubble(msg, "user");
+
+    try {
+      const res = await fetch(C.CHAT_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          message: msg,
+          history
+        })
+      });
+
+      const data = await res.json();
+      const reply = data.reply || "Erreur : réponse vide.";
+
+      history.push({ role: "bot", text: reply });
+      localStorage.setItem(CHAT_KEY, JSON.stringify(history));
+      addBubble(reply, "bot");
+
+    } catch (e) {
+      addBubble("Erreur : impossible de joindre le serveur.", "bot");
     }
+  }
 
-    .overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(255,255,255,0.55);
-      backdrop-filter: blur(6px);
-      z-index: 0;
-    }
+  sendBtn.addEventListener("click", sendMessage);
 
-    .app-container {
-      position: relative;
-      z-index: 1;
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 40px 20px 80px;
-    }
+  input.addEventListener("keydown", e => {
+    if (e.key === "Enter") sendMessage();
+  });
 
-    .nav {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 40px;
-    }
+  /* ======================
+     VIDEO
+     ====================== */
+  const startVideoBtn = document.getElementById("start-video");
+  const stopVideoBtn = document.getElementById("stop-video");
 
-    .nav-btn {
-      flex: 1;
-      padding: 14px;
-      font-size: 15px;
-      font-weight: 600;
-      border-radius: 12px;
-      border: none;
-      cursor: pointer;
-      background: #e5e7eb;
-    }
+  let recorder, chunks = [];
 
-    .nav-btn.active {
-      background: #2f5bea;
-      color: white;
-    }
+  startVideoBtn.onclick = async () => {
+    const stream = await navigator.mediaDevices.getUserMedia({ video:true, audio:true });
+    recorder = new MediaRecorder(stream);
+    chunks = [];
 
-    .section {
-      display: none;
-      background: rgba(255,255,255,0.92);
-      border-radius: 20px;
-      padding: 40px;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.15);
-    }
+    recorder.ondataavailable = e => chunks.push(e.data);
+    recorder.start();
 
-    .section.active {
-      display: block;
-    }
+    startVideoBtn.disabled = true;
+    stopVideoBtn.disabled = false;
+  };
 
-    .chat-box {
-      height: 360px;
-      overflow-y: auto;
-      border: 1px solid #ddd;
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 20px;
-      background: #fff;
-    }
+  stopVideoBtn.onclick = () => {
+    recorder.stop();
+    recorder.onstop = async () => {
+      const blob = new Blob(chunks, { type:"video/webm" });
+      const fd = new FormData();
+      fd.append("video", blob);
 
-    .bubble {
-      max-width: 75%;
-      margin-bottom: 12px;
-      padding: 12px 16px;
-      border-radius: 14px;
-      font-size: 14px;
-      white-space: pre-wrap;
-    }
+      await fetch(C.UPLOAD_URL, {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${token}` },
+        body: fd
+      });
 
-    .bubble.user {
-      background: #2f5bea;
-      color: white;
-      margin-left: auto;
-    }
+      addBubble("🎥 Vidéo envoyée.", "user");
+    };
 
-    .bubble.bot {
-      background: #e5e7eb;
-    }
-
-    .chat-controls {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-
-    .chat-input {
-      flex: 1;
-      padding: 12px;
-      border-radius: 10px;
-      border: 1px solid #ccc;
-    }
-
-    .btn {
-      padding: 12px 16px;
-      border-radius: 10px;
-      border: none;
-      cursor: pointer;
-      font-weight: 600;
-    }
-
-    .btn.primary { background:#2f5bea; color:white; }
-    .btn.ghost { background:#e5e7eb; }
-  </style>
-</head>
-<body>
-
-  <div class="overlay"></div>
-
-  <div class="app-container">
-
-    <div class="nav">
-      <button class="nav-btn" data-target="friends">Amis</button>
-      <button class="nav-btn" data-target="chat">Chat_bot_Beta</button>
-      <button class="nav-btn" data-target="projects">Projets</button>
-      <button class="nav-btn" data-target="forum">Forum</button>
-    </div>
-
-    <section id="friends" class="section">
-      <h1>Amis</h1>
-    </section>
-
-    <section id="chat" class="section">
-      <h1>Chat_bot_Beta</h1>
-
-      <div class="chat-box" id="chat-box"></div>
-
-      <div class="chat-controls">
-        <input id="chat-input" class="chat-input" placeholder="Écris ton message…" />
-        <button id="send-btn" class="btn primary">Envoyer</button>
-      </div>
-
-      <div class="chat-controls">
-        <button id="start-video" class="btn ghost">🎥 Démarrer vidéo</button>
-        <button id="stop-video" class="btn ghost" disabled>⏹ Arrêter & envoyer</button>
-      </div>
-    </section>
-
-    <section id="projects" class="section">
-      <h1>Projets</h1>
-    </section>
-
-    <section id="forum" class="section">
-      <h1>Forum</h1>
-    </section>
-
-  </div>
-
-  <script src="config.js"></script>
-  <script src="app.js"></script>
-</body>
-</html>
+    startVideoBtn.disabled = false;
+    stopVideoBtn.disabled = true;
+  };
+});
