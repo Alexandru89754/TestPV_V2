@@ -2,80 +2,42 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>Patient virtuel · Application</title>
+  <title>Patient virtuel · Home</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-  <div class="bg" id="app-bg"></div>
+  <h1>Bienvenue</h1>
+  <p id="user"></p>
 
-  <div class="app-shell">
-
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-      <div class="sidebar-top">
-        <h2>Patient virtuel</h2>
-        <p id="user-pill">—</p>
-      </div>
-
-      <nav class="nav">
-        <button class="nav-btn active" data-view="view-home">Accueil</button>
-        <button class="nav-btn" data-view="view-profile">Mon profil</button>
-        <button class="nav-btn" data-view="view-friends">Mes amis</button>
-        <button class="nav-btn" data-view="view-forum">Discussion</button>
-        <button class="nav-btn" data-view="view-ai">Outil AI</button>
-      </nav>
-
-      <button class="btn ghost full" id="logout-btn">Déconnexion</button>
-    </aside>
-
-    <!-- MAIN -->
-    <main class="content">
-
-      <!-- HOME -->
-      <section class="panel" id="view-home">
-        <h1>Bienvenue 👋</h1>
-        <p id="welcome-text" class="muted"></p>
-
-        <div class="card">
-          <p>
-            Vous êtes connecté à la plateforme <strong>Patient virtuel</strong>.
-            Utilisez le menu à gauche pour accéder aux fonctionnalités.
-          </p>
-        </div>
-      </section>
-
-      <!-- PROFILE -->
-      <section class="panel hidden" id="view-profile">
-        <h1>Mon profil</h1>
-        <p>Section profil (déjà gérée par ton backend).</p>
-      </section>
-
-      <!-- FRIENDS -->
-      <section class="panel hidden" id="view-friends">
-        <h1>Mes amis</h1>
-        <p>Gestion des amis.</p>
-      </section>
-
-      <!-- FORUM -->
-      <section class="panel hidden" id="view-forum">
-        <h1>Discussion</h1>
-        <p>Forum général.</p>
-      </section>
-
-      <!-- AI -->
-      <section class="panel hidden" id="view-ai">
-        <h1>Patient virtuel – AI</h1>
-        <p>Chatbot clinique.</p>
-      </section>
-
-    </main>
-  </div>
+  <button id="logout">Déconnexion</button>
 
   <script src="config.js"></script>
-  <script src="app.js"></script>
+  <script>
+    const token = localStorage.getItem(CONFIG.TOKEN_KEY);
+
+    if (!token) {
+      window.location.href = "index.html";
+    }
+
+    fetch(CONFIG.AUTH_ME_URL, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(me => {
+        document.getElementById("user").textContent =
+          "Connecté en tant que " + me.email;
+      })
+      .catch(() => {
+        localStorage.removeItem(CONFIG.TOKEN_KEY);
+        window.location.href = "index.html";
+      });
+
+    document.getElementById("logout").onclick = () => {
+      localStorage.removeItem(CONFIG.TOKEN_KEY);
+      window.location.href = "index.html";
+    };
+  </script>
 
 </body>
 </html>
