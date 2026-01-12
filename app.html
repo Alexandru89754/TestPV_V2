@@ -1,158 +1,87 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const C = window.CONFIG;
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Patient virtuel · Application</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+</head>
 
-  /* ======================
-     AUTH CHECK
-     ====================== */
-  const token = localStorage.getItem(C.TOKEN_KEY);
-  if (!token) {
-    window.location.href = "index.html";
-    return;
-  }
+<body style="background:url('./asset/image_in.png') center/cover fixed">
 
-  /* ======================
-     NAVIGATION
-     ====================== */
-  const buttons = document.querySelectorAll(".nav-btn");
-  const sections = document.querySelectorAll(".section");
+<div class="app-container">
 
-  function showSection(id) {
-    sections.forEach(s => s.classList.toggle("active", s.id === id));
-    buttons.forEach(b => b.classList.toggle("active", b.dataset.target === id));
-    localStorage.setItem("pv_active_tab", id);
-  }
+  <!-- TOP -->
+  <div class="top-bar">
+    <h2>Patient virtuel</h2>
+    <button id="logout-btn">Déconnexion</button>
+  </div>
 
-  buttons.forEach(b => {
-    b.addEventListener("click", () => {
-      showSection(b.dataset.target);
-    });
-  });
+  <!-- NAV -->
+  <div class="nav">
+    <button class="nav-btn" data-target="chat">Chat_bot_Beta</button>
+    <button class="nav-btn" data-target="forum">Forum</button>
+  </div>
 
-  showSection(localStorage.getItem("pv_active_tab") || "chat");
+  <!-- CHAT -->
+  <section id="chat" class="section active">
+    <h1>Chat_bot_Beta</h1>
+    <div id="chat-box" style="height:300px;border:1px solid #ccc;margin-bottom:10px"></div>
+    <input id="chat-input" placeholder="Message…" />
+    <button id="send-btn">Envoyer</button>
+  </section>
 
-  /* ======================
-     LOGOUT
-     ====================== */
-  const logoutBtn = document.getElementById("logout-btn");
-  if (logoutBtn) {
-    logoutBtn.onclick = async () => {
-      try {
-        await fetch(C.AUTH_LOGOUT_URL, {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` }
-        });
-      } catch {}
-      localStorage.clear();
-      window.location.href = "index.html";
-    };
-  }
+  <!-- FORUM -->
+  <section id="forum" class="section">
 
-  /* ======================
-     FORUM
-     ====================== */
-  const postsList = document.getElementById("posts-list");
-  const commentsList = document.getElementById("comments-list");
-  const commentInput = document.getElementById("comment-input");
-  const sendCommentBtn = document.getElementById("send-comment");
+    <h1>Forum</h1>
 
-  const postTitle = document.getElementById("post-title");
-  const postBody = document.getElementById("post-body");
-  const createPostBtn = document.getElementById("create-post");
+    <!-- CRÉER POST -->
+    <h3>Créer un post</h3>
 
-  let activePostId = null;
+    <input
+      id="post-title"
+      placeholder="Titre du post"
+      style="width:100%;margin-bottom:10px"
+    />
 
-  async function loadPosts() {
-    if (!postsList) return;
+    <textarea
+      id="post-body"
+      placeholder="Contenu du post"
+      style="width:100%;height:100px"
+    ></textarea>
 
-    const res = await fetch(C.FORUM_POSTS_URL);
-    const posts = await res.json();
+    <button id="create-post">Publier</button>
 
-    postsList.innerHTML = "";
-    posts.forEach(p => {
-      const div = document.createElement("div");
-      div.style.cursor = "pointer";
-      div.style.marginBottom = "14px";
-      div.innerHTML = `
-        <strong>${p.title}</strong><br/>
-        <small>${p.body.slice(0, 100)}...</small>
-      `;
-      div.onclick = () => selectPost(p.id);
-      postsList.appendChild(div);
-    });
-  }
+    <hr style="margin:30px 0"/>
 
-  async function selectPost(postId) {
-    activePostId = postId;
-    if (!commentsList) return;
+    <!-- POSTS + COMMENTS -->
+    <div style="display:flex;gap:20px">
 
-    commentsList.innerHTML = "Chargement…";
+      <div style="width:40%">
+        <h3>Posts</h3>
+        <div id="posts-list"></div>
+      </div>
 
-    const res = await fetch(`${C.FORUM_COMMENTS_PREFIX}${postId}/comments`);
-    const comments = await res.json();
+      <div style="width:60%">
+        <h3>Commentaires</h3>
+        <div id="comments-list"></div>
 
-    commentsList.innerHTML = "";
-    comments.forEach(c => {
-      const div = document.createElement("div");
-      div.style.marginBottom = "10px";
-      div.textContent = c.body;
-      commentsList.appendChild(div);
-    });
-  }
+        <textarea
+          id="comment-input"
+          placeholder="Répondre…"
+          style="width:100%;height:80px;margin-top:10px"
+        ></textarea>
 
-  if (sendCommentBtn) {
-    sendCommentBtn.onclick = async () => {
-      if (!activePostId) {
-        alert("Sélectionne un post");
-        return;
-      }
+        <button id="send-comment">Répondre</button>
+      </div>
 
-      const text = commentInput.value.trim();
-      if (!text) return;
+    </div>
+  </section>
 
-      await fetch(`${C.FORUM_COMMENTS_PREFIX}${activePostId}/comments`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ body: text })
-      });
+</div>
 
-      commentInput.value = "";
-      selectPost(activePostId);
-    };
-  }
-
-  if (createPostBtn) {
-    createPostBtn.onclick = async () => {
-      const title = postTitle.value.trim();
-      const body = postBody.value.trim();
-
-      if (!title || !body) {
-        alert("Titre et contenu requis");
-        return;
-      }
-
-      const res = await fetch(C.FORUM_POSTS_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ title, body })
-      });
-
-      if (!res.ok) {
-        alert("Erreur lors de la création du post");
-        return;
-      }
-
-      postTitle.value = "";
-      postBody.value = "";
-
-      loadPosts();
-    };
-  }
-
-  loadPosts();
-});
+<script src="./config.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>
