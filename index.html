@@ -5,7 +5,6 @@
   <title>Patient Virtuel</title>
 
   <style>
-    /* RESET */
     * {
       margin: 0;
       padding: 0;
@@ -18,13 +17,64 @@
       height: 100%;
     }
 
-    /* BACKGROUND IMAGE */
     body {
-      background-image: url("assets/background-clinic.jpg"); /* <-- ton image */
+      background-color: #000;
+      color: white;
+    }
+
+    /* ===================== */
+    /* LOGIN SCREEN */
+    /* ===================== */
+    #login-screen {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .login-box {
+      background: #111;
+      padding: 50px;
+      border-radius: 8px;
+      width: 360px;
+      text-align: center;
+    }
+
+    .login-box h1 {
+      margin-bottom: 30px;
+      font-size: 28px;
+    }
+
+    .login-box input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: none;
+      border-radius: 4px;
+    }
+
+    .login-box button {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      background: white;
+      color: black;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    /* ===================== */
+    /* APP (APRÈS LOGIN) */
+    /* ===================== */
+    #app {
+      display: none;
+      width: 100%;
+      height: 100%;
+      background-image: url("image_in.png");
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
-      color: white;
     }
 
     /* TOP NAV */
@@ -33,31 +83,27 @@
       top: 0;
       left: 0;
       width: 100%;
+      padding: 15px 20px;
       display: flex;
       gap: 10px;
-      padding: 15px 20px;
       background: rgba(0, 0, 0, 0.55);
       backdrop-filter: blur(4px);
-      z-index: 100;
+      z-index: 10;
     }
 
     .top-nav button {
       padding: 8px 14px;
       border: none;
-      cursor: pointer;
       background: white;
       color: black;
       font-weight: bold;
+      cursor: pointer;
       border-radius: 4px;
     }
 
-    .top-nav button:hover {
-      background: #e0e0e0;
-    }
-
-    /* CONTENT CONTAINER */
+    /* CONTENT */
     .content {
-      display: none; /* IMPORTANT : caché par défaut */
+      display: none;
       max-width: 800px;
       margin: 140px auto;
       background: rgba(0, 0, 0, 0.65);
@@ -69,16 +115,12 @@
       margin-bottom: 10px;
     }
 
-    .content p {
-      line-height: 1.6;
-    }
-
     .launch-btn {
       margin-top: 20px;
       padding: 10px 16px;
-      background: #ffffff;
-      color: #000;
       border: none;
+      background: white;
+      color: black;
       font-weight: bold;
       cursor: pointer;
       border-radius: 4px;
@@ -88,59 +130,74 @@
 
 <body>
 
-  <!-- NAVIGATION -->
-  <div class="top-nav">
-    <button onclick="showSection('home')">Accueil</button>
-    <button onclick="showSection('profil')">Mon profil</button>
-    <button onclick="showSection('amis')">Mes amis</button>
-    <button onclick="showSection('discussion')">Discussion</button>
-    <button onclick="showSection('recherche')">Mise à jour recherche</button>
-    <button onclick="showSection('ai')">Outil IA</button>
+  <!-- LOGIN -->
+  <div id="login-screen">
+    <div class="login-box">
+      <h1>Patient Virtuel</h1>
+      <input type="text" placeholder="Email" />
+      <input type="password" placeholder="Mot de passe" />
+      <button onclick="login()">Connexion</button>
+    </div>
   </div>
 
-  <!-- SECTIONS -->
+  <!-- APP -->
+  <div id="app">
 
-  <div id="home" class="content">
-    <h1>Bienvenue</h1>
-    <p>Sélectionnez une option dans le menu pour commencer.</p>
+    <div class="top-nav">
+      <button onclick="showSection('home')">Accueil</button>
+      <button onclick="showSection('profil')">Mon profil</button>
+      <button onclick="showSection('amis')">Mes amis</button>
+      <button onclick="showSection('discussion')">Discussion</button>
+      <button onclick="showSection('recherche')">Mise à jour recherche</button>
+      <button onclick="showSection('ai')">Outil AI</button>
+    </div>
+
+    <div id="home" class="content">
+      <h1>Bienvenue</h1>
+      <p>Sélectionnez une option dans le menu pour commencer.</p>
+    </div>
+
+    <div id="profil" class="content">
+      <h1>Mon profil</h1>
+      <p>Modification de l’avatar et de la biographie (à venir).</p>
+    </div>
+
+    <div id="amis" class="content">
+      <h1>Mes amis</h1>
+      <p>Recherche, demandes et échanges cliniques.</p>
+    </div>
+
+    <div id="discussion" class="content">
+      <h1>Discussion</h1>
+      <p>Forum général pour étudiants.</p>
+    </div>
+
+    <div id="recherche" class="content">
+      <h1>Mise à jour recherche</h1>
+      <p>Zone de développement.</p>
+    </div>
+
+    <div id="ai" class="content">
+      <h1>Outil AI – Patient virtuel</h1>
+      <p>Le chatbot est accessible ici.</p>
+      <button class="launch-btn">Lancer le patient virtuel</button>
+    </div>
+
   </div>
 
-  <div id="profil" class="content">
-    <h1>Mon profil</h1>
-    <p>Modification de l’avatar et de la biographie (à venir).</p>
-  </div>
-
-  <div id="amis" class="content">
-    <h1>Mes amis</h1>
-    <p>Rechercher des amis, gérer les demandes et discuter de cas cliniques.</p>
-  </div>
-
-  <div id="discussion" class="content">
-    <h1>Discussion</h1>
-    <p>Forum général pour échanger entre étudiants.</p>
-  </div>
-
-  <div id="recherche" class="content">
-    <h1>Mise à jour recherche</h1>
-    <p>Section de développement et de tests.</p>
-  </div>
-
-  <div id="ai" class="content">
-    <h1>Outil AI – Patient virtuel</h1>
-    <p>Le chatbot est accessible ici.</p>
-    <button class="launch-btn">Lancer le patient virtuel</button>
-  </div>
-
-  <!-- SCRIPT -->
   <script>
-    function showSection(id) {
-      const sections = document.querySelectorAll('.content');
-      sections.forEach(section => section.style.display = 'none');
+    function login() {
+      document.getElementById("login-screen").style.display = "none";
+      document.getElementById("app").style.display = "block";
+    }
 
-      const activeSection = document.getElementById(id);
-      if (activeSection) {
-        activeSection.style.display = 'block';
-      }
+    function showSection(id) {
+      document.querySelectorAll(".content").forEach(section => {
+        section.style.display = "none";
+      });
+
+      const target = document.getElementById(id);
+      if (target) target.style.display = "block";
     }
   </script>
 
