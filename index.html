@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Patient virtuel – Connexion</title>
+  <title>Patient virtuel</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -11,86 +11,64 @@
   <!-- Background -->
   <div class="bg" id="app-bg"></div>
 
-  <!-- Page shell -->
-  <main class="login-page">
+  <!-- Welcome screen -->
+  <main class="welcome-page" id="welcome-screen">
+    <div class="welcome-center">
+      <h1 class="welcome-title">Patient virtuel</h1>
+      <p class="welcome-text">
+        Plateforme de simulation clinique pour le raisonnement et l’anamnèse
+      </p>
 
-    <!-- Login card -->
+      <button class="btn primary large" id="enter-btn">
+        Entrer
+      </button>
+    </div>
+  </main>
+
+  <!-- Login screen -->
+  <main class="login-page hidden" id="login-screen">
+
     <section class="login-card">
 
-      <!-- Logo / Brand -->
       <header class="login-header">
         <div class="logo-box">
           <div class="logo-mark"></div>
         </div>
-        <h1 class="login-title">Patient virtuel</h1>
+        <h1 class="login-title">Bienvenue</h1>
         <p class="login-subtitle">
-          Plateforme de simulation clinique interactive
+          Connectez-vous ou créez un compte
         </p>
       </header>
 
-      <!-- Description -->
-      <div class="login-intro">
-        <p>
-          Cette plateforme permet aux étudiant·es d’interagir avec un patient virtuel (IA)
-          afin de pratiquer l’anamnèse et le raisonnement clinique dans un contexte sécuritaire.
-        </p>
-      </div>
-
-      <!-- Tabs -->
       <div class="login-tabs">
-        <button class="tab active" id="tab-login" type="button">Connexion</button>
+        <button class="tab" id="tab-login" type="button">Connexion</button>
         <button class="tab" id="tab-register" type="button">Créer un compte</button>
       </div>
 
-      <!-- Form -->
-      <div class="login-form">
+      <div class="login-form hidden" id="auth-form">
 
-        <label class="label" for="email">Adresse courriel</label>
-        <input
-          class="input"
-          id="email"
-          type="email"
-          placeholder="ex: etudiant@universite.ca"
-          autocomplete="email"
-        />
+        <label class="label">Adresse courriel</label>
+        <input class="input" id="email" type="email" placeholder="ex: etudiant@uni.ca" />
 
-        <label class="label" for="password">Mot de passe</label>
-        <input
-          class="input"
-          id="password"
-          type="password"
-          placeholder="••••••••"
-          autocomplete="current-password"
-        />
+        <label class="label">Mot de passe</label>
+        <input class="input" id="password" type="password" placeholder="••••••••" />
 
-        <!-- Confirm password (register only) -->
         <div id="confirm-wrap" class="hidden">
-          <label class="label" for="password2">Confirmer le mot de passe</label>
-          <input
-            class="input"
-            id="password2"
-            type="password"
-            placeholder="••••••••"
-            autocomplete="new-password"
-          />
+          <label class="label">Confirmer le mot de passe</label>
+          <input class="input" id="password2" type="password" placeholder="••••••••" />
         </div>
 
-        <!-- Actions -->
         <div class="login-actions">
-          <button class="btn primary" id="submit" type="button">
-            Continuer
-          </button>
+          <button class="btn primary" id="submit">Continuer</button>
         </div>
 
-        <!-- Error -->
-        <p class="error" id="err" aria-live="polite"></p>
+        <p class="error" id="err"></p>
       </div>
 
-      <!-- Footer note -->
       <footer class="login-footer">
         <p>
-          ⚠️ N’entrez aucune information personnelle identifiable.<br />
-          Utilisez un contexte fictif ou académique.
+          Utilisation académique uniquement.<br>
+          Aucune donnée personnelle réelle.
         </p>
       </footer>
 
@@ -99,5 +77,36 @@
 
   <script src="config.js"></script>
   <script src="auth.js"></script>
+
+  <script>
+    const enterBtn = document.getElementById("enter-btn");
+    const welcome = document.getElementById("welcome-screen");
+    const login = document.getElementById("login-screen");
+
+    const tabLogin = document.getElementById("tab-login");
+    const tabRegister = document.getElementById("tab-register");
+    const form = document.getElementById("auth-form");
+    const confirmWrap = document.getElementById("confirm-wrap");
+
+    enterBtn.onclick = () => {
+      welcome.classList.add("hidden");
+      login.classList.remove("hidden");
+    };
+
+    tabLogin.onclick = () => {
+      tabLogin.classList.add("active");
+      tabRegister.classList.remove("active");
+      confirmWrap.classList.add("hidden");
+      form.classList.remove("hidden");
+    };
+
+    tabRegister.onclick = () => {
+      tabRegister.classList.add("active");
+      tabLogin.classList.remove("active");
+      confirmWrap.classList.remove("hidden");
+      form.classList.remove("hidden");
+    };
+  </script>
+
 </body>
 </html>
