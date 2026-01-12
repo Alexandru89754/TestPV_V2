@@ -1,6 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
   const CFG = window.CONFIG || {};
-
   const BG_WELCOME = CFG.BG_WELCOME || "./asset/image_out.png";
   const PARTICIPANT_KEY = CFG.PARTICIPANT_KEY || "pv_participant_id";
 

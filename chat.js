@@ -1,8 +1,9 @@
 document.addEventListener("DOMContentLoaded", () => {
   const CFG = window.CONFIG || {};
 
-  const BACKEND_CHAT_URL = CFG.CHAT_URL || (CFG.API_BASE_URL ? `${CFG.API_BASE_URL.replace(/\/+$/, "")}/chat` : "");
-  const BACKEND_UPLOAD_URL = CFG.UPLOAD_URL || (CFG.API_BASE_URL ? `${CFG.API_BASE_URL.replace(/\/+$/, "")}/upload-video` : "");
+  // ✅ URLs backend (depuis config.js)
+  const BACKEND_CHAT_URL = CFG.CHAT_URL || (CFG.API_BASE_URL ? `${CFG.API_BASE_URL}/chat` : "");
+  const BACKEND_UPLOAD_URL = CFG.UPLOAD_URL || (CFG.API_BASE_URL ? `${CFG.API_BASE_URL}/upload-video` : "");
 
   const BG_CHAT = CFG.BG_CHAT || "./asset/image_in.png";
   const PARTICIPANT_KEY = CFG.PARTICIPANT_KEY || "pv_participant_id";
@@ -68,7 +69,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function sendToBackend(message, participantId) {
-    if (!BACKEND_CHAT_URL) throw new Error("BACKEND_CHAT_URL non défini dans config.js");
+    if (!BACKEND_CHAT_URL) {
+      throw new Error("BACKEND_CHAT_URL manquant (config.js).");
+    }
 
     const res = await fetch(BACKEND_CHAT_URL, {
       method: "POST",
@@ -158,9 +161,9 @@ document.addEventListener("DOMContentLoaded", () => {
     window.location.href = "index.html";
   });
 
-  // =========================
-  // CAMERA (facultatif)
-  // =========================
+  /* =========================
+     CAMERA (facultatif)
+     ========================= */
 
   let stream = null;
   let recorder = null;
@@ -204,9 +207,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
       recorder.onstop = async () => {
         try {
-          setStatus("Upload…");
+          if (!BACKEND_UPLOAD_URL) {
+            setStatus("Upload désactivé");
+            addMessageToUI("Upload vidéo non configuré (config.js).", "system");
+            return;
+          }
 
-          if (!BACKEND_UPLOAD_URL) throw new Error("BACKEND_UPLOAD_URL non défini dans config.js");
+          setStatus("Upload…");
 
           const blob = new Blob(chunks, { type: recorder.mimeType || "video/webm" });
           const file = new File([blob], "recording.webm", { type: blob.type });
@@ -225,10 +232,9 @@ document.addEventListener("DOMContentLoaded", () => {
             setStatus("Upload OK");
             addMessageToUI(`Vidéo envoyée. Path: ${data.path}`, "system");
           }
-        } catch (e) {
+        } catch {
           setStatus("Erreur upload");
           addMessageToUI("Vidéo: erreur d’envoi. Mode texte disponible.", "system");
-          addMessageToUI(String(e), "system");
         } finally {
           camStartBtn.disabled = false;
           camStopBtn.disabled = true;
