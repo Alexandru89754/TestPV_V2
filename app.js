@@ -58,12 +58,19 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem(CHAT_KEY, JSON.stringify(history));
     renderChat();
 
-    const res = await fetch(C.CHAT_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: msg, userId: token })
-    });
+    const userId = localStorage.getItem(C.USER_EMAIL_KEY);
 
+const res = await fetch(C.CHAT_URL, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "Authorization": `Bearer ${token}`
+  },
+  body: JSON.stringify({
+    message: msg,
+    userId: userId
+  })
+});
     const data = await res.json();
     history.push({ role: "bot", text: data.reply });
     localStorage.setItem(CHAT_KEY, JSON.stringify(history));
