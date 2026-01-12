@@ -2,35 +2,20 @@ document.addEventListener("DOMContentLoaded", () => {
   const C = window.CONFIG;
 
   /* ======================
-     AUTH GUARD
+     AUTH CHECK
      ====================== */
   const token = localStorage.getItem(C.TOKEN_KEY);
-  if (!token) {
+  const userId =
+    localStorage.getItem(C.PARTICIPANT_KEY) ||
+    localStorage.getItem(C.USER_EMAIL_KEY);
+
+  if (!token || !userId) {
     window.location.href = "index.html";
     return;
   }
 
   /* ======================
-     LOGOUT (PURGE USER)
-     ====================== */
-  const logoutBtn = document.getElementById("logout-btn");
-
-  const tokenHash = btoa(token.slice(0, 40));
-  const CHAT_KEY = `pv_chat_history_${tokenHash}`;
-
-  logoutBtn.addEventListener("click", () => {
-    // 🔥 purge UNIQUEMENT l’historique de CE user
-    localStorage.removeItem(CHAT_KEY);
-    localStorage.removeItem("pv_active_tab");
-
-    // token logout
-    localStorage.removeItem(C.TOKEN_KEY);
-
-    window.location.href = "index.html";
-  });
-
-  /* ======================
-     NAV
+     NAV + STATE PERSISTENCE
      ====================== */
   const buttons = document.querySelectorAll(".nav-btn");
   const sections = document.querySelectorAll(".section");
@@ -41,24 +26,20 @@ document.addEventListener("DOMContentLoaded", () => {
     if (id) localStorage.setItem("pv_active_tab", id);
   }
 
-  buttons.forEach(btn =>
-    btn.addEventListener("click", () => showSection(btn.dataset.target))
+  buttons.forEach(b =>
+    b.addEventListener("click", () => showSection(b.dataset.target))
   );
 
   showSection(localStorage.getItem("pv_active_tab") || "chat");
 
   /* ======================
-     CHAT BOT — ISOLÉ PAR USER
+     CHAT BOT (PAR UTILISATEUR)
      ====================== */
   const chatBox = document.getElementById("chat-box");
   const input = document.getElementById("chat-input");
   const sendBtn = document.getElementById("send-btn");
 
-  const userId =
-    localStorage.getItem(C.USER_EMAIL_KEY) ||
-    localStorage.getItem(C.PARTICIPANT_KEY) ||
-    "anonymous";
-
+  const CHAT_KEY = `pv_chat_history_${userId}`;
   let history = JSON.parse(localStorage.getItem(CHAT_KEY) || "[]");
 
   function addBubble(text, role) {
@@ -72,14 +53,6 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderHistory() {
     chatBox.innerHTML = "";
     history.forEach(m => addBubble(m.text, m.role));
-  }
-
-  if (history.length === 0) {
-    history.push({
-      role: "bot",
-      text: "Bonjour. Je suis votre patient virtuel. Quelle est votre principale raison de consultation aujourd’hui ?"
-    });
-    localStorage.setItem(CHAT_KEY, JSON.stringify(history));
   }
 
   renderHistory();
@@ -98,21 +71,23 @@ document.addEventListener("DOMContentLoaded", () => {
       const res = await fetch(C.CHAT_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: msg, history, userId })
+        body: JSON.stringify({
+          message: msg,
+          history,
+          userId
+        })
       });
 
-      const raw = await res.text();
-      if (!res.ok) throw new Error(raw);
+      if (!res.ok) throw new Error("backend error");
 
-      const data = JSON.parse(raw);
-      const reply = data.reply || "Réponse vide.";
+      const data = await res.json();
+      const reply = data.reply || "Erreur : réponse vide.";
 
       history.push({ role: "bot", text: reply });
       localStorage.setItem(CHAT_KEY, JSON.stringify(history));
       addBubble(reply, "bot");
-
-    } catch (e) {
-      addBubble(`❌ Erreur backend:\n${e.message}`, "bot");
+    } catch {
+      addBubble("❌ Erreur backend inaccessible.", "bot");
     }
   }
 
@@ -120,4 +95,66 @@ document.addEventListener("DOMContentLoaded", () => {
   input.addEventListener("keydown", e => {
     if (e.key === "Enter") sendMessage();
   });
+
+  /* ======================
+     VIDEO (OPTIONNEL – inchangé)
+     ====================== */
+  const startVideoBtn = document.getElementById("start-video");
+  const stopVideoBtn = document.getElementById("stop-video");
+
+  let recorder, chunks = [];
+
+  if (startVideoBtn && stopVideoBtn) {
+    startVideoBtn.onclick = async () => {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true
+      });
+      recorder = new MediaRecorder(stream);
+      chunks = [];
+      recorder.ondataavailable = e => chunks.push(e.data);
+      recorder.start();
+      startVideoBtn.disabled = true;
+      stopVideoBtn.disabled = false;
+    };
+
+    stopVideoBtn.onclick = () => {
+      recorder.stop();
+      recorder.onstop = async () => {
+        const blob = new Blob(chunks, { type: "video/webm" });
+        const fd = new FormData();
+        fd.append("video", blob);
+
+        await fetch(C.UPLOAD_URL, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+          body: fd
+        });
+
+        addBubble("🎥 Vidéo envoyée.", "user");
+      };
+
+      startVideoBtn.disabled = false;
+      stopVideoBtn.disabled = true;
+    };
+  }
+
+  /* ======================
+     LOGOUT (CORRECTION CRITIQUE)
+     ====================== */
+  const logoutBtn = document.getElementById("logout-btn");
+
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", () => {
+      // Supprime UNIQUEMENT les données de l'utilisateur courant
+      localStorage.removeItem(C.TOKEN_KEY);
+      localStorage.removeItem(C.USER_EMAIL_KEY);
+      localStorage.removeItem(C.PARTICIPANT_KEY);
+      localStorage.removeItem(CHAT_KEY);
+      localStorage.removeItem("pv_active_tab");
+
+      // Redirection propre
+      window.location.href = "index.html";
+    });
+  }
 });
