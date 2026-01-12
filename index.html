@@ -7,55 +7,93 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+
+  <!-- Background -->
   <div class="bg" id="app-bg"></div>
 
-  <main class="auth-shell">
-    <section class="card auth-card">
-      <header class="card-header">
-        <div class="brand">
-          <div class="brand-mark"></div>
-          <div>
-            <div class="brand-title">Patient virtuel</div>
-            <div class="brand-subtitle">Plateforme · Simulation clinique</div>
-          </div>
+  <!-- Page shell -->
+  <main class="login-page">
+
+    <!-- Login card -->
+    <section class="login-card">
+
+      <!-- Logo / Brand -->
+      <header class="login-header">
+        <div class="logo-box">
+          <div class="logo-mark"></div>
         </div>
+        <h1 class="login-title">Patient virtuel</h1>
+        <p class="login-subtitle">
+          Plateforme de simulation clinique interactive
+        </p>
       </header>
 
-      <div class="card-body">
-        <h1 class="h1">Connexion</h1>
-        <p class="muted">
-          Crée un compte, puis connecte-toi. Ensuite tu arrives sur le dashboard.
+      <!-- Description -->
+      <div class="login-intro">
+        <p>
+          Cette plateforme permet aux étudiant·es d’interagir avec un patient virtuel (IA)
+          afin de pratiquer l’anamnèse et le raisonnement clinique dans un contexte sécuritaire.
         </p>
-
-        <div class="tabs">
-          <button class="tab active" id="tab-login" type="button">Se connecter</button>
-          <button class="tab" id="tab-register" type="button">Créer un compte</button>
-        </div>
-
-        <div class="form">
-          <label class="label" for="email">Email</label>
-          <input class="input" id="email" type="email" placeholder="ex: test@example.com" autocomplete="email" />
-
-          <label class="label" for="password">Mot de passe</label>
-          <input class="input" id="password" type="password" placeholder="Mot de passe" autocomplete="current-password" />
-
-          <div id="confirm-wrap" style="display:none;">
-            <label class="label" for="password2">Confirmer le mot de passe</label>
-            <input class="input" id="password2" type="password" placeholder="Confirmer" autocomplete="new-password" />
-          </div>
-
-          <div class="row">
-            <button class="btn primary" id="submit" type="button">Continuer</button>
-            <button class="btn ghost" id="clear" type="button">Effacer</button>
-          </div>
-
-          <p class="error" id="err" aria-live="polite"></p>
-        </div>
-
-        <div class="note">
-          <strong>Confidentialité :</strong> n’entre pas d’informations personnelles identifiables dans le chat.
-        </div>
       </div>
+
+      <!-- Tabs -->
+      <div class="login-tabs">
+        <button class="tab active" id="tab-login" type="button">Connexion</button>
+        <button class="tab" id="tab-register" type="button">Créer un compte</button>
+      </div>
+
+      <!-- Form -->
+      <div class="login-form">
+
+        <label class="label" for="email">Adresse courriel</label>
+        <input
+          class="input"
+          id="email"
+          type="email"
+          placeholder="ex: etudiant@universite.ca"
+          autocomplete="email"
+        />
+
+        <label class="label" for="password">Mot de passe</label>
+        <input
+          class="input"
+          id="password"
+          type="password"
+          placeholder="••••••••"
+          autocomplete="current-password"
+        />
+
+        <!-- Confirm password (register only) -->
+        <div id="confirm-wrap" class="hidden">
+          <label class="label" for="password2">Confirmer le mot de passe</label>
+          <input
+            class="input"
+            id="password2"
+            type="password"
+            placeholder="••••••••"
+            autocomplete="new-password"
+          />
+        </div>
+
+        <!-- Actions -->
+        <div class="login-actions">
+          <button class="btn primary" id="submit" type="button">
+            Continuer
+          </button>
+        </div>
+
+        <!-- Error -->
+        <p class="error" id="err" aria-live="polite"></p>
+      </div>
+
+      <!-- Footer note -->
+      <footer class="login-footer">
+        <p>
+          ⚠️ N’entrez aucune information personnelle identifiable.<br />
+          Utilisez un contexte fictif ou académique.
+        </p>
+      </footer>
+
     </section>
   </main>
 
