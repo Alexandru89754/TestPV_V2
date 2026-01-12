@@ -172,4 +172,57 @@ sendBtn.onclick = async () => {
   };
 
   loadPosts();
+  /* ======================
+   FIN DE L’ACTIVITÉ
+====================== */
+
+const endChatBtn = document.getElementById("end-chat-btn");
+
+if (endChatBtn) {
+  endChatBtn.onclick = async () => {
+    if (!history.length) {
+      alert("Aucun message à sauvegarder.");
+      return;
+    }
+
+    const confirmEnd = confirm(
+      "Voulez-vous vraiment terminer l’activité ?\n\nLe chat sera sauvegardé et réinitialisé."
+    );
+
+    if (!confirmEnd) return;
+
+    try {
+      const res = await fetch(
+  "https://patient-virtuel-platform-backend.onrender.com/chat/end",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      history: history,
+    }),
+  }
+);
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data?.detail || "Erreur sauvegarde chat");
+      }
+
+      // ✅ succès → reset local
+      localStorage.removeItem(CHAT_KEY);
+      history = [];
+      document.getElementById("chat-box").innerHTML = "";
+
+      alert("Activité terminée et sauvegardée avec succès.");
+
+    } catch (err) {
+      console.error(err);
+      alert("Erreur lors de la sauvegarde du chat.");
+    }
+  };
+}
+
 });
