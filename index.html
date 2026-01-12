@@ -2,258 +2,147 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>Patient virtuel – Connexion</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <link rel="stylesheet" href="style.css" />
+  <title>Patient Virtuel</title>
 
   <style>
-    body {
+    /* RESET */
+    * {
       margin: 0;
-      font-family: Inter, system-ui, sans-serif;
-      height: 100vh;
-      background: url("./asset/image_out.png") center / cover no-repeat fixed;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
     }
 
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      background: linear-gradient(
-        to bottom,
-        rgba(15, 30, 70, 0.75),
-        rgba(255, 255, 255, 0.6)
-      );
-      z-index: 0;
-    }
-
-    .auth-wrapper {
-      position: relative;
-      z-index: 1;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .auth-card {
-      width: 520px;
-      padding: 48px;
-      border-radius: 24px;
-      background: rgba(25, 35, 75, 0.6);
-      backdrop-filter: blur(16px);
-      color: white;
-    }
-
-    .auth-title {
-      font-size: 40px;
-      font-weight: 700;
-      margin-bottom: 8px;
-    }
-
-    .auth-subtitle {
-      font-size: 18px;
-      opacity: 0.85;
-      margin-bottom: 36px;
-    }
-
-    .auth-tabs {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 32px;
-    }
-
-    .auth-tab {
-      padding: 10px 18px;
-      border-radius: 10px;
-      border: 1px solid rgba(255,255,255,0.25);
-      background: transparent;
-      color: white;
-      cursor: pointer;
-    }
-
-    .auth-tab.active {
-      background: linear-gradient(135deg, #4f7cff, #6ba3ff);
-      border: none;
-    }
-
-    .auth-form {
-      display: flex;
-      flex-direction: column;
-      gap: 22px;
-    }
-
-    .auth-field label {
-      font-size: 14px;
-      opacity: 0.85;
-      margin-bottom: 6px;
-      display: block;
-    }
-
-    .auth-field input {
+    html, body {
       width: 100%;
-      padding: 14px 16px;
-      border-radius: 12px;
-      border: none;
-      font-size: 15px;
+      height: 100%;
     }
 
-    .auth-button {
-      margin-top: 16px;
-      padding: 16px;
-      border-radius: 14px;
-      border: none;
-      font-size: 16px;
-      font-weight: 600;
+    /* BACKGROUND IMAGE */
+    body {
+      background-image: url("assets/background-clinic.jpg"); /* <-- ton image */
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
       color: white;
-      background: linear-gradient(135deg, #4f7cff, #6ba3ff);
+    }
+
+    /* TOP NAV */
+    .top-nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      display: flex;
+      gap: 10px;
+      padding: 15px 20px;
+      background: rgba(0, 0, 0, 0.55);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+    }
+
+    .top-nav button {
+      padding: 8px 14px;
+      border: none;
       cursor: pointer;
+      background: white;
+      color: black;
+      font-weight: bold;
+      border-radius: 4px;
     }
 
-    .auth-error {
-      margin-top: 14px;
-      color: #ffb4b4;
-      font-size: 14px;
+    .top-nav button:hover {
+      background: #e0e0e0;
     }
 
-    .auth-note {
-      margin-top: 28px;
-      font-size: 13px;
-      opacity: 0.7;
+    /* CONTENT CONTAINER */
+    .content {
+      display: none; /* IMPORTANT : caché par défaut */
+      max-width: 800px;
+      margin: 140px auto;
+      background: rgba(0, 0, 0, 0.65);
+      padding: 30px;
+      border-radius: 8px;
+    }
+
+    .content h1 {
+      margin-bottom: 10px;
+    }
+
+    .content p {
       line-height: 1.6;
     }
 
-    .hidden {
-      display: none;
+    .launch-btn {
+      margin-top: 20px;
+      padding: 10px 16px;
+      background: #ffffff;
+      color: #000;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 4px;
     }
   </style>
 </head>
 
 <body>
-  <div class="auth-wrapper">
-    <div class="auth-card">
 
-      <div class="auth-title">Bienvenue</div>
-      <div class="auth-subtitle">
-        Connectez-vous ou créez un compte pour accéder à la plateforme
-      </div>
-
-      <div class="auth-tabs">
-        <button class="auth-tab active" id="loginTab">Connexion</button>
-        <button class="auth-tab" id="registerTab">Créer un compte</button>
-      </div>
-
-      <!-- LOGIN -->
-      <form class="auth-form" id="loginForm">
-        <div class="auth-field">
-          <label>Adresse courriel</label>
-          <input type="email" id="loginEmail" required />
-        </div>
-
-        <div class="auth-field">
-          <label>Mot de passe</label>
-          <input type="password" id="loginPassword" required />
-        </div>
-
-        <button class="auth-button" type="submit">Se connecter</button>
-        <div class="auth-error" id="loginError"></div>
-      </form>
-
-      <!-- REGISTER -->
-      <form class="auth-form hidden" id="registerForm">
-        <div class="auth-field">
-          <label>Adresse courriel</label>
-          <input type="email" id="registerEmail" required />
-        </div>
-
-        <div class="auth-field">
-          <label>Mot de passe</label>
-          <input type="password" id="registerPassword" required />
-        </div>
-
-        <button class="auth-button" type="submit">Créer le compte</button>
-        <div class="auth-error" id="registerError"></div>
-      </form>
-
-      <div class="auth-note">
-        Utilisation académique uniquement.<br />
-        Aucune donnée personnelle réelle ne doit être utilisée.
-      </div>
-
-    </div>
+  <!-- NAVIGATION -->
+  <div class="top-nav">
+    <button onclick="showSection('home')">Accueil</button>
+    <button onclick="showSection('profil')">Mon profil</button>
+    <button onclick="showSection('amis')">Mes amis</button>
+    <button onclick="showSection('discussion')">Discussion</button>
+    <button onclick="showSection('recherche')">Mise à jour recherche</button>
+    <button onclick="showSection('ai')">Outil IA</button>
   </div>
 
+  <!-- SECTIONS -->
+
+  <div id="home" class="content">
+    <h1>Bienvenue</h1>
+    <p>Sélectionnez une option dans le menu pour commencer.</p>
+  </div>
+
+  <div id="profil" class="content">
+    <h1>Mon profil</h1>
+    <p>Modification de l’avatar et de la biographie (à venir).</p>
+  </div>
+
+  <div id="amis" class="content">
+    <h1>Mes amis</h1>
+    <p>Rechercher des amis, gérer les demandes et discuter de cas cliniques.</p>
+  </div>
+
+  <div id="discussion" class="content">
+    <h1>Discussion</h1>
+    <p>Forum général pour échanger entre étudiants.</p>
+  </div>
+
+  <div id="recherche" class="content">
+    <h1>Mise à jour recherche</h1>
+    <p>Section de développement et de tests.</p>
+  </div>
+
+  <div id="ai" class="content">
+    <h1>Outil AI – Patient virtuel</h1>
+    <p>Le chatbot est accessible ici.</p>
+    <button class="launch-btn">Lancer le patient virtuel</button>
+  </div>
+
+  <!-- SCRIPT -->
   <script>
-    const API_BASE = "https://patient-virtuel-platform-backend.onrender.com";
+    function showSection(id) {
+      const sections = document.querySelectorAll('.content');
+      sections.forEach(section => section.style.display = 'none');
 
-    const loginTab = document.getElementById("loginTab");
-    const registerTab = document.getElementById("registerTab");
-    const loginForm = document.getElementById("loginForm");
-    const registerForm = document.getElementById("registerForm");
-
-    loginTab.onclick = () => {
-      loginTab.classList.add("active");
-      registerTab.classList.remove("active");
-      loginForm.classList.remove("hidden");
-      registerForm.classList.add("hidden");
-    };
-
-    registerTab.onclick = () => {
-      registerTab.classList.add("active");
-      loginTab.classList.remove("active");
-      registerForm.classList.remove("hidden");
-      loginForm.classList.add("hidden");
-    };
-
-    loginForm.onsubmit = async (e) => {
-      e.preventDefault();
-      document.getElementById("loginError").textContent = "";
-
-      try {
-        const res = await fetch(`${API_BASE}/auth/login`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: loginEmail.value,
-            password: loginPassword.value
-          })
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) throw new Error(data.detail || "Erreur de connexion");
-
-        localStorage.setItem("pv_token", data.access_token);
-        window.location.href = "home.html";
-      } catch (err) {
-        document.getElementById("loginError").textContent = err.message;
+      const activeSection = document.getElementById(id);
+      if (activeSection) {
+        activeSection.style.display = 'block';
       }
-    };
-
-    registerForm.onsubmit = async (e) => {
-      e.preventDefault();
-      document.getElementById("registerError").textContent = "";
-
-      try {
-        const res = await fetch(`${API_BASE}/auth/register`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: registerEmail.value,
-            password: registerPassword.value
-          })
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) throw new Error(data.detail || "Erreur création compte");
-
-        alert("Compte créé. Vous pouvez vous connecter.");
-        loginTab.click();
-      } catch (err) {
-        document.getElementById("registerError").textContent = err.message;
-      }
-    };
+    }
   </script>
+
 </body>
 </html>
