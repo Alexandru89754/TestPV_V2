@@ -54,18 +54,17 @@ document.addEventListener("DOMContentLoaded", () => {
     history.forEach(m => addBubble(m.text, m.role));
   }
 
+  /* ===== BOT PARLE EN PREMIER ===== */
   if (history.length === 0) {
-    history.push({
-      role: "bot",
-      text: "Bonjour. Je suis votre patient virtuel. Quelle est votre principale raison de consultation aujourd’hui ?"
-    });
+    const firstMessage = "Bonjour. Je suis votre patient virtuel. Quelle est votre principale raison de consultation aujourd’hui ?";
+    history.push({ role: "bot", text: firstMessage });
     localStorage.setItem(CHAT_KEY, JSON.stringify(history));
   }
 
   renderHistory();
 
-  async function sendMessage() {
-    const msg = input.value.trim();
+  async function sendMessage(textOverride = null) {
+    const msg = textOverride ?? input.value.trim();
     if (!msg) return;
 
     input.value = "";
@@ -87,21 +86,25 @@ document.addEventListener("DOMContentLoaded", () => {
         })
       });
 
-      if (!res.ok) throw new Error("Backend error");
+      const raw = await res.text();
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status} → ${raw}`);
+      }
 
-      const data = await res.json();
-      const reply = data.reply || "Réponse vide.";
+      const data = JSON.parse(raw);
+      const reply = data.reply || "Réponse vide du backend.";
 
       history.push({ role: "bot", text: reply });
       localStorage.setItem(CHAT_KEY, JSON.stringify(history));
       addBubble(reply, "bot");
 
-    } catch {
-      addBubble("❌ Erreur : backend inaccessible.", "bot");
+    } catch (e) {
+      addBubble(`❌ Backend erreur:\n${e.message}`, "bot");
+      console.error("CHAT BACKEND ERROR:", e);
     }
   }
 
-  sendBtn.addEventListener("click", sendMessage);
+  sendBtn.addEventListener("click", () => sendMessage());
   input.addEventListener("keydown", e => {
     if (e.key === "Enter") sendMessage();
   });
@@ -133,12 +136,15 @@ document.addEventListener("DOMContentLoaded", () => {
       const fd = new FormData();
       fd.append("video", blob);
 
-      await fetch(C.UPLOAD_URL, {
-        method: "POST",
-        body: fd
-      });
-
-      addBubble("🎥 Vidéo envoyée.", "user");
+      try {
+        await fetch(C.UPLOAD_URL, {
+          method: "POST",
+          body: fd
+        });
+        addBubble("🎥 Vidéo envoyée.", "user");
+      } catch (e) {
+        addBubble("❌ Erreur envoi vidéo.", "bot");
+      }
     };
 
     startVideoBtn.disabled = false;
