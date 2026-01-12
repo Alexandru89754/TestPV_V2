@@ -1,12 +1,18 @@
 document.addEventListener("DOMContentLoaded", () => {
   const C = window.CONFIG;
+
+  /* ======================
+     AUTH CHECK
+     ====================== */
   const token = localStorage.getItem(C.TOKEN_KEY);
   if (!token) {
     window.location.href = "index.html";
     return;
   }
 
-  /* NAV */
+  /* ======================
+     NAVIGATION
+     ====================== */
   const buttons = document.querySelectorAll(".nav-btn");
   const sections = document.querySelectorAll(".section");
 
@@ -16,125 +22,137 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem("pv_active_tab", id);
   }
 
-  buttons.forEach(b => b.onclick = () => showSection(b.dataset.target));
+  buttons.forEach(b => {
+    b.addEventListener("click", () => {
+      showSection(b.dataset.target);
+    });
+  });
+
   showSection(localStorage.getItem("pv_active_tab") || "chat");
 
-  /* LOGOUT */
-  document.getElementById("logout-btn").onclick = async () => {
-    await fetch(C.AUTH_LOGOUT_URL, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    localStorage.clear();
-    window.location.href = "index.html";
-  };
-
-  /* CHAT */
-  const chatBox = document.getElementById("chat-box");
-  const input = document.getElementById("chat-input");
-  const sendBtn = document.getElementById("send-btn");
-
-  const CHAT_KEY = `pv_chat_${token}`;
-  let history = JSON.parse(localStorage.getItem(CHAT_KEY) || "[]");
-
-  function renderChat() {
-    chatBox.innerHTML = "";
-    history.forEach(m => {
-      const div = document.createElement("div");
-      div.className = `bubble ${m.role}`;
-      div.textContent = m.text;
-      chatBox.appendChild(div);
-    });
+  /* ======================
+     LOGOUT
+     ====================== */
+  const logoutBtn = document.getElementById("logout-btn");
+  if (logoutBtn) {
+    logoutBtn.onclick = async () => {
+      try {
+        await fetch(C.AUTH_LOGOUT_URL, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      } catch {}
+      localStorage.clear();
+      window.location.href = "index.html";
+    };
   }
 
-  renderChat();
-
-  sendBtn.onclick = async () => {
-    const msg = input.value.trim();
-    if (!msg) return;
-    input.value = "";
-
-    history.push({ role: "user", text: msg });
-    localStorage.setItem(CHAT_KEY, JSON.stringify(history));
-    renderChat();
-
-    const res = await fetch(C.CHAT_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: msg, userId: token })
-    });
-
-    const data = await res.json();
-    history.push({ role: "bot", text: data.reply });
-    localStorage.setItem(CHAT_KEY, JSON.stringify(history));
-    renderChat();
-  };
-
-  /* FORUM */
+  /* ======================
+     FORUM
+     ====================== */
   const postsList = document.getElementById("posts-list");
   const commentsList = document.getElementById("comments-list");
   const commentInput = document.getElementById("comment-input");
+  const sendCommentBtn = document.getElementById("send-comment");
 
   const postTitle = document.getElementById("post-title");
   const postBody = document.getElementById("post-body");
+  const createPostBtn = document.getElementById("create-post");
 
-  let activePost = null;
+  let activePostId = null;
 
   async function loadPosts() {
+    if (!postsList) return;
+
     const res = await fetch(C.FORUM_POSTS_URL);
     const posts = await res.json();
+
     postsList.innerHTML = "";
     posts.forEach(p => {
-      const d = document.createElement("div");
-      d.innerHTML = `<strong>${p.title}</strong>`;
-      d.style.cursor = "pointer";
-      d.onclick = () => loadComments(p.id);
-      postsList.appendChild(d);
+      const div = document.createElement("div");
+      div.style.cursor = "pointer";
+      div.style.marginBottom = "14px";
+      div.innerHTML = `
+        <strong>${p.title}</strong><br/>
+        <small>${p.body.slice(0, 100)}...</small>
+      `;
+      div.onclick = () => selectPost(p.id);
+      postsList.appendChild(div);
     });
   }
 
-  async function loadComments(postId) {
-    activePost = postId;
+  async function selectPost(postId) {
+    activePostId = postId;
+    if (!commentsList) return;
+
+    commentsList.innerHTML = "Chargement…";
+
     const res = await fetch(`${C.FORUM_COMMENTS_PREFIX}${postId}/comments`);
     const comments = await res.json();
+
     commentsList.innerHTML = "";
     comments.forEach(c => {
-      const d = document.createElement("div");
-      d.textContent = c.body;
-      commentsList.appendChild(d);
+      const div = document.createElement("div");
+      div.style.marginBottom = "10px";
+      div.textContent = c.body;
+      commentsList.appendChild(div);
     });
   }
 
-  document.getElementById("create-post").onclick = async () => {
-    await fetch(C.FORUM_POSTS_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        title: postTitle.value,
-        body: postBody.value
-      })
-    });
-    postTitle.value = "";
-    postBody.value = "";
-    loadPosts();
-  };
+  if (sendCommentBtn) {
+    sendCommentBtn.onclick = async () => {
+      if (!activePostId) {
+        alert("Sélectionne un post");
+        return;
+      }
 
-  document.getElementById("send-comment").onclick = async () => {
-    if (!activePost) return;
-    await fetch(`${C.FORUM_COMMENTS_PREFIX}${activePost}/comments`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify({ body: commentInput.value })
-    });
-    commentInput.value = "";
-    loadComments(activePost);
-  };
+      const text = commentInput.value.trim();
+      if (!text) return;
+
+      await fetch(`${C.FORUM_COMMENTS_PREFIX}${activePostId}/comments`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ body: text })
+      });
+
+      commentInput.value = "";
+      selectPost(activePostId);
+    };
+  }
+
+  if (createPostBtn) {
+    createPostBtn.onclick = async () => {
+      const title = postTitle.value.trim();
+      const body = postBody.value.trim();
+
+      if (!title || !body) {
+        alert("Titre et contenu requis");
+        return;
+      }
+
+      const res = await fetch(C.FORUM_POSTS_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ title, body })
+      });
+
+      if (!res.ok) {
+        alert("Erreur lors de la création du post");
+        return;
+      }
+
+      postTitle.value = "";
+      postBody.value = "";
+
+      loadPosts();
+    };
+  }
 
   loadPosts();
 });
