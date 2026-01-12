@@ -18,35 +18,64 @@
     }
 
     body {
-      background-color: #000;
       color: white;
     }
 
-    /* ===================== */
-    /* LOGIN SCREEN */
-    /* ===================== */
-    #login-screen {
+    /* ============================= */
+    /* LOGIN / REGISTER BACKGROUND */
+    /* ============================= */
+    #auth-screen {
       width: 100%;
       height: 100%;
+      background:
+        linear-gradient(
+          rgba(40, 90, 160, 0.75),
+          rgba(255, 255, 255, 0.65)
+        ),
+        url("image_out.png");
+      background-size: cover;
+      background-position: center;
       display: flex;
       align-items: center;
       justify-content: center;
     }
 
-    .login-box {
-      background: #111;
-      padding: 50px;
-      border-radius: 8px;
-      width: 360px;
-      text-align: center;
+    .glass-box {
+      width: 380px;
+      padding: 40px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.18);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      color: #fff;
     }
 
-    .login-box h1 {
-      margin-bottom: 30px;
+    .glass-box h1 {
+      text-align: center;
+      margin-bottom: 25px;
       font-size: 28px;
     }
 
-    .login-box input {
+    .tabs {
+      display: flex;
+      margin-bottom: 20px;
+    }
+
+    .tabs button {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      cursor: pointer;
+      background: rgba(255,255,255,0.3);
+      color: #000;
+      font-weight: bold;
+    }
+
+    .tabs button.active {
+      background: white;
+    }
+
+    .glass-box input {
       width: 100%;
       padding: 10px;
       margin-bottom: 15px;
@@ -54,7 +83,7 @@
       border-radius: 4px;
     }
 
-    .login-box button {
+    .glass-box .action-btn {
       width: 100%;
       padding: 10px;
       border: none;
@@ -62,11 +91,12 @@
       color: black;
       font-weight: bold;
       cursor: pointer;
+      border-radius: 4px;
     }
 
-    /* ===================== */
-    /* APP (APRÈS LOGIN) */
-    /* ===================== */
+    /* ============================= */
+    /* APP AFTER LOGIN */
+    /* ============================= */
     #app {
       display: none;
       width: 100%;
@@ -74,10 +104,8 @@
       background-image: url("image_in.png");
       background-size: cover;
       background-position: center;
-      background-repeat: no-repeat;
     }
 
-    /* TOP NAV */
     .top-nav {
       position: fixed;
       top: 0;
@@ -86,8 +114,8 @@
       padding: 15px 20px;
       display: flex;
       gap: 10px;
-      background: rgba(0, 0, 0, 0.55);
-      backdrop-filter: blur(4px);
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(6px);
       z-index: 10;
     }
 
@@ -101,18 +129,14 @@
       border-radius: 4px;
     }
 
-    /* CONTENT */
     .content {
       display: none;
       max-width: 800px;
       margin: 140px auto;
-      background: rgba(0, 0, 0, 0.65);
       padding: 30px;
-      border-radius: 8px;
-    }
-
-    .content h1 {
-      margin-bottom: 10px;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(8px);
+      border-radius: 10px;
     }
 
     .launch-btn {
@@ -130,13 +154,32 @@
 
 <body>
 
-  <!-- LOGIN -->
-  <div id="login-screen">
-    <div class="login-box">
+  <!-- AUTH SCREEN -->
+  <div id="auth-screen">
+    <div class="glass-box">
+
       <h1>Patient Virtuel</h1>
-      <input type="text" placeholder="Email" />
-      <input type="password" placeholder="Mot de passe" />
-      <button onclick="login()">Connexion</button>
+
+      <div class="tabs">
+        <button id="loginTab" class="active" onclick="showLogin()">Connexion</button>
+        <button id="registerTab" onclick="showRegister()">Créer un compte</button>
+      </div>
+
+      <!-- LOGIN -->
+      <div id="loginForm">
+        <input type="email" placeholder="Email" />
+        <input type="password" placeholder="Mot de passe" />
+        <button class="action-btn" onclick="enterApp()">Connexion</button>
+      </div>
+
+      <!-- REGISTER -->
+      <div id="registerForm" style="display:none;">
+        <input type="text" placeholder="Nom complet" />
+        <input type="email" placeholder="Email" />
+        <input type="password" placeholder="Mot de passe" />
+        <button class="action-btn" onclick="enterApp()">Créer le compte</button>
+      </div>
+
     </div>
   </div>
 
@@ -148,56 +191,62 @@
       <button onclick="showSection('profil')">Mon profil</button>
       <button onclick="showSection('amis')">Mes amis</button>
       <button onclick="showSection('discussion')">Discussion</button>
-      <button onclick="showSection('recherche')">Mise à jour recherche</button>
+      <button onclick="showSection('recherche')">Recherche</button>
       <button onclick="showSection('ai')">Outil AI</button>
     </div>
 
     <div id="home" class="content">
       <h1>Bienvenue</h1>
-      <p>Sélectionnez une option dans le menu pour commencer.</p>
+      <p>Sélectionnez une option dans le menu.</p>
     </div>
 
     <div id="profil" class="content">
       <h1>Mon profil</h1>
-      <p>Modification de l’avatar et de la biographie (à venir).</p>
     </div>
 
     <div id="amis" class="content">
       <h1>Mes amis</h1>
-      <p>Recherche, demandes et échanges cliniques.</p>
     </div>
 
     <div id="discussion" class="content">
       <h1>Discussion</h1>
-      <p>Forum général pour étudiants.</p>
     </div>
 
     <div id="recherche" class="content">
       <h1>Mise à jour recherche</h1>
-      <p>Zone de développement.</p>
     </div>
 
     <div id="ai" class="content">
       <h1>Outil AI – Patient virtuel</h1>
-      <p>Le chatbot est accessible ici.</p>
       <button class="launch-btn">Lancer le patient virtuel</button>
     </div>
 
   </div>
 
   <script>
-    function login() {
-      document.getElementById("login-screen").style.display = "none";
+    function showLogin() {
+      document.getElementById("loginForm").style.display = "block";
+      document.getElementById("registerForm").style.display = "none";
+      document.getElementById("loginTab").classList.add("active");
+      document.getElementById("registerTab").classList.remove("active");
+    }
+
+    function showRegister() {
+      document.getElementById("loginForm").style.display = "none";
+      document.getElementById("registerForm").style.display = "block";
+      document.getElementById("loginTab").classList.remove("active");
+      document.getElementById("registerTab").classList.add("active");
+    }
+
+    function enterApp() {
+      document.getElementById("auth-screen").style.display = "none";
       document.getElementById("app").style.display = "block";
     }
 
     function showSection(id) {
-      document.querySelectorAll(".content").forEach(section => {
-        section.style.display = "none";
-      });
-
-      const target = document.getElementById(id);
-      if (target) target.style.display = "block";
+      document.querySelectorAll(".content").forEach(c => c.style.display = "none");
+      const section = document.getElementById(id);
+      if (section) section.style.display = "block";
     }
   </script>
 
