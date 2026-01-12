@@ -1,7 +1,9 @@
 document.addEventListener("DOMContentLoaded", () => {
   const C = window.CONFIG;
 
-  /* ===== AUTH GUARD ===== */
+  /* ======================
+     AUTH GUARD
+     ====================== */
   const token = localStorage.getItem(C.TOKEN_KEY);
   if (!token) {
     window.location.href = "index.html";
@@ -20,26 +22,43 @@ document.addEventListener("DOMContentLoaded", () => {
     if (id) localStorage.setItem("pv_active_tab", id);
   }
 
-  buttons.forEach(b =>
-    b.addEventListener("click", () => showSection(b.dataset.target))
-  );
+  buttons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      showSection(btn.dataset.target);
+    });
+  });
 
   showSection(localStorage.getItem("pv_active_tab") || "chat");
 
   /* ======================
-     CHAT BOT
+     CHAT BOT — USER ISOLATED
      ====================== */
   const chatBox = document.getElementById("chat-box");
   const input = document.getElementById("chat-input");
   const sendBtn = document.getElementById("send-btn");
 
+  if (!chatBox || !input || !sendBtn) {
+    console.error("Chat elements missing in DOM");
+    return;
+  }
+
+  /* 🔒 HISTORIQUE ISOLÉ PAR TOKEN (UNIQUE PAR USER) */
+  const tokenFragment = (token || "no-token").slice(0, 40);
+  const tokenHash = btoa(tokenFragment);
+  const CHAT_KEY = `pv_chat_history_${tokenHash}`;
+
+  /* userId exigé par le backend */
   const userId =
-    localStorage.getItem(C.PARTICIPANT_KEY) ||
     localStorage.getItem(C.USER_EMAIL_KEY) ||
+    localStorage.getItem(C.PARTICIPANT_KEY) ||
     "anonymous";
 
-  const CHAT_KEY = `pv_chat_history_${userId}`;
-  let history = JSON.parse(localStorage.getItem(CHAT_KEY) || "[]");
+  let history = [];
+  try {
+    history = JSON.parse(localStorage.getItem(CHAT_KEY) || "[]");
+  } catch {
+    history = [];
+  }
 
   function addBubble(text, role) {
     const div = document.createElement("div");
@@ -54,17 +73,19 @@ document.addEventListener("DOMContentLoaded", () => {
     history.forEach(m => addBubble(m.text, m.role));
   }
 
-  /* ===== BOT PARLE EN PREMIER ===== */
+  /* BOT PARLE UNE SEULE FOIS PAR UTILISATEUR */
   if (history.length === 0) {
-    const firstMessage = "Bonjour. Je suis votre patient virtuel. Quelle est votre principale raison de consultation aujourd’hui ?";
-    history.push({ role: "bot", text: firstMessage });
+    history.push({
+      role: "bot",
+      text: "Bonjour. Je suis votre patient virtuel. Quelle est votre principale raison de consultation aujourd’hui ?"
+    });
     localStorage.setItem(CHAT_KEY, JSON.stringify(history));
   }
 
   renderHistory();
 
-  async function sendMessage(textOverride = null) {
-    const msg = textOverride ?? input.value.trim();
+  async function sendMessage() {
+    const msg = input.value.trim();
     if (!msg) return;
 
     input.value = "";
@@ -92,62 +113,70 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       const data = JSON.parse(raw);
-      const reply = data.reply || "Réponse vide du backend.";
+      const reply = data.reply || "Réponse vide.";
 
       history.push({ role: "bot", text: reply });
       localStorage.setItem(CHAT_KEY, JSON.stringify(history));
       addBubble(reply, "bot");
 
     } catch (e) {
-      addBubble(`❌ Backend erreur:\n${e.message}`, "bot");
+      addBubble(`❌ Erreur backend:\n${e.message}`, "bot");
       console.error("CHAT BACKEND ERROR:", e);
     }
   }
 
-  sendBtn.addEventListener("click", () => sendMessage());
+  sendBtn.addEventListener("click", sendMessage);
   input.addEventListener("keydown", e => {
     if (e.key === "Enter") sendMessage();
   });
 
   /* ======================
-     VIDEO
+     VIDEO (OPTIONNEL)
      ====================== */
   const startVideoBtn = document.getElementById("start-video");
   const stopVideoBtn = document.getElementById("stop-video");
 
-  let recorder, chunks = [];
+  let recorder = null;
+  let chunks = [];
 
-  startVideoBtn.onclick = async () => {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-    recorder = new MediaRecorder(stream);
-    chunks = [];
+  if (startVideoBtn && stopVideoBtn) {
+    startVideoBtn.onclick = async () => {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true
+      });
+      recorder = new MediaRecorder(stream);
+      chunks = [];
 
-    recorder.ondataavailable = e => chunks.push(e.data);
-    recorder.start();
+      recorder.ondataavailable = e => chunks.push(e.data);
+      recorder.start();
 
-    startVideoBtn.disabled = true;
-    stopVideoBtn.disabled = false;
-  };
-
-  stopVideoBtn.onclick = () => {
-    recorder.stop();
-    recorder.onstop = async () => {
-      const blob = new Blob(chunks, { type: "video/webm" });
-      const fd = new FormData();
-      fd.append("video", blob);
-
-      try {
-        await fetch(C.UPLOAD_URL, {
-          method: "POST",
-          body: fd
-        });
-        addBubble("🎥 Vidéo envoyée.", "user");
-      } catch (e) {
-        addBubble("❌ Erreur envoi vidéo.", "bot");
-      }
+      startVideoBtn.disabled = true;
+      stopVideoBtn.disabled = false;
     };
 
-    startVideoBtn.disabled = false;
-    stopVideoBtn.disabled = true;
-  };
+    stopVideoBtn.onclick = () => {
+      if (!recorder) return;
+
+      recorder.stop();
+      recorder.onstop = async () => {
+        const blob = new Blob(chunks, { type: "video/webm" });
+        const fd = new FormData();
+        fd.append("video", blob);
+
+        try {
+          await fetch(C.UPLOAD_URL, {
+            method: "POST",
+            body: fd
+          });
+          addBubble("🎥 Vidéo envoyée.", "user");
+        } catch (e) {
+          addBubble("❌ Erreur envoi vidéo.", "bot");
+        }
+      };
+
+      startVideoBtn.disabled = false;
+      stopVideoBtn.disabled = true;
+    };
+  }
 });
