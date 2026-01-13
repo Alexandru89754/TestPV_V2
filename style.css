@@ -1,4 +1,6 @@
-/* RESET */
+/* =========================
+   RESET
+========================= */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -6,7 +8,9 @@
   font-family: "Segoe UI", system-ui, sans-serif;
 }
 
-/* BACKGROUND */
+/* =========================
+   BACKGROUND LOGIN
+========================= */
 .login-bg {
   position: fixed;
   inset: 0;
@@ -14,6 +18,7 @@
   z-index: -2;
 }
 
+/* ⚠️ IMPORTANT : ne bloque JAMAIS les clics */
 .login-overlay {
   position: fixed;
   inset: 0;
@@ -23,9 +28,12 @@
     rgba(255, 255, 255, 0.65)
   );
   z-index: -1;
+  pointer-events: none; /* ✅ CRITIQUE */
 }
 
-/* CENTERING */
+/* =========================
+   CENTERING
+========================= */
 .login-wrapper {
   min-height: 100vh;
   display: flex;
@@ -33,7 +41,9 @@
   justify-content: center;
 }
 
-/* CARD */
+/* =========================
+   CARD
+========================= */
 .login-card {
   width: 100%;
   max-width: 420px;
@@ -41,9 +51,13 @@
   border-radius: 16px;
   padding: 40px;
   box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  position: relative;
+  z-index: 10; /* ✅ au-dessus de tout */
 }
 
-/* TEXT */
+/* =========================
+   TEXT
+========================= */
 .login-title {
   font-size: 32px;
   margin-bottom: 10px;
@@ -55,11 +69,15 @@
   color: #333;
 }
 
-/* TABS */
+/* =========================
+   TABS LOGIN / REGISTER
+========================= */
 .login-tabs {
   display: flex;
   gap: 10px;
   margin-bottom: 30px;
+  position: relative;
+  z-index: 10;
 }
 
 .tab {
@@ -69,6 +87,7 @@
   border: 1px solid #ccc;
   background: #f4f4f4;
   cursor: pointer;
+  font-weight: 600;
 }
 
 .tab.active {
@@ -77,7 +96,9 @@
   border-color: #2f5bea;
 }
 
-/* FORM */
+/* =========================
+   FORM
+========================= */
 .login-form {
   display: flex;
   flex-direction: column;
@@ -96,6 +117,9 @@
   font-size: 15px;
 }
 
+/* =========================
+   BUTTON
+========================= */
 .login-btn {
   margin-top: 20px;
   padding: 14px;
@@ -105,13 +129,18 @@
   background: #2f5bea;
   color: white;
   cursor: pointer;
+  font-weight: 600;
+  position: relative;
+  z-index: 10;
 }
 
 .login-btn:hover {
   background: #2446b5;
 }
 
-/* FOOTER */
+/* =========================
+   FOOTER
+========================= */
 .login-footer {
   margin-top: 30px;
   font-size: 13px;
