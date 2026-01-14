@@ -34,6 +34,7 @@ export const API_ENDPOINTS = {
 
   PROFILE_ME: apiUrl("/profiles/me"),
   PROFILE_UPDATE: apiUrl("/profiles/me"),
+  PROFILE_AVATAR_UPLOAD: apiUrl("/profiles/me/avatar"),
 
   FRIENDS_LIST: apiUrl("/friends"),
   FRIEND_INCOMING: apiUrl("/friends/requests/incoming"),

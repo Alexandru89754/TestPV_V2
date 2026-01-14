@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { API_ENDPOINTS, ASSETS, ROUTES } from "../lib/config";
 import { httpJson } from "../lib/api";
-import { clearSession, setToken, setUserEmail } from "../lib/session";
+import { clearSession, setParticipantId, setToken, setUserEmail } from "../lib/session";
 import { useNavigate } from "react-router-dom";
 
 export default function LoginPage() {
@@ -52,7 +52,8 @@ export default function LoginPage() {
 
         setToken(tok.access_token);
         setUserEmail(trimmedEmail);
-        navigate(ROUTES.HOME_PAGE, { replace: true });
+        setParticipantId(trimmedEmail);
+        navigate(ROUTES.APP_PAGE, { replace: true });
         return;
       }
 
@@ -68,7 +69,8 @@ export default function LoginPage() {
 
       setToken(tok.access_token);
       setUserEmail(trimmedEmail);
-      navigate(ROUTES.HOME_PAGE, { replace: true });
+      setParticipantId(trimmedEmail);
+      navigate(ROUTES.APP_PAGE, { replace: true });
     } catch (err) {
       setError(err.message);
     } finally {
