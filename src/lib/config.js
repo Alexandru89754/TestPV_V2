@@ -52,3 +52,7 @@ export const ASSETS = {
   BG_WELCOME: bgWelcome,
   BG_CHAT: bgChat,
 };
+
+if (typeof window !== "undefined") {
+  window.ASSETS ??= ASSETS;
+}
