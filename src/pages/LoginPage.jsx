@@ -52,7 +52,6 @@ export default function LoginPage() {
 
         setToken(tok.access_token);
         setUserEmail(trimmedEmail);
-        setParticipantId(trimmedEmail);
         navigate(ROUTES.APP_PAGE, { replace: true });
         return;
       }
@@ -69,7 +68,6 @@ export default function LoginPage() {
 
       setToken(tok.access_token);
       setUserEmail(trimmedEmail);
-      setParticipantId(trimmedEmail);
       navigate(ROUTES.APP_PAGE, { replace: true });
     } catch (err) {
       setError(err.message);

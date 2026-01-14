@@ -52,8 +52,6 @@ export default function App() {
           }
         >
           <Route index element={<Navigate to="forum" replace />} />
-          <Route path="chatbot" element={<ChatPage />} />
-          <Route path="patient" element={<Navigate to="chatbot" replace />} />
           <Route path="forum" element={<ForumPage />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="friends" element={<FriendsPage />} />
