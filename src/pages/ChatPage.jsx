@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { API_ENDPOINTS, ASSETS, ROUTES, STORAGE_KEYS, SUPABASE } from "../lib/config";
+import { API_ENDPOINTS, ASSETS, DEBUG, ROUTES, STORAGE_KEYS, SUPABASE } from "../lib/config";
 import { httpForm, httpJson } from "../lib/api";
 import { getParticipantId, getUserEmail, setParticipantId as setParticipantStorage } from "../lib/session";
 
@@ -173,6 +173,14 @@ export default function ChatPage() {
     setEndError("");
     setEndNotice("");
 
+    if (DEBUG) {
+      console.warn("[DEBUG] close discussion config", {
+        hasWindowConfig: typeof window !== "undefined" && Boolean(window.CONFIG),
+        supabaseUrl: SUPABASE.URL,
+        supabaseAnonKey: SUPABASE.ANON_KEY ? "present" : "missing",
+      });
+    }
+
     if (!userEmail) {
       setEndError("Impossible de récupérer l’email utilisateur.");
       return;
@@ -222,6 +230,9 @@ export default function ChatPage() {
       setStatus("Prêt");
       setEndNotice("Discussion sauvegardée et réinitialisée.");
     } catch (err) {
+      if (DEBUG) {
+        console.error("[DEBUG] close discussion error", err);
+      }
       setEndError(`Erreur lors de la sauvegarde: ${err.message || err}`);
     } finally {
       setEnding(false);

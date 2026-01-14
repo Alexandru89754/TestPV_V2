@@ -54,11 +54,29 @@ export const ASSETS = {
   BG_CHAT: bgChat,
 };
 
+const resolveSupabaseValue = (key) => {
+  if (typeof window !== "undefined" && window.CONFIG) {
+    const direct = window.CONFIG[key];
+    if (direct) return direct;
+    if (window.CONFIG.SUPABASE && window.CONFIG.SUPABASE[key]) {
+      return window.CONFIG.SUPABASE[key];
+    }
+  }
+  return import.meta.env[`VITE_${key}`] || "";
+};
+
 export const SUPABASE = {
-  URL: import.meta.env.VITE_SUPABASE_URL || "",
-  ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY || "",
+  URL: resolveSupabaseValue("SUPABASE_URL"),
+  ANON_KEY: resolveSupabaseValue("SUPABASE_ANON_KEY"),
 };
 
 if (typeof window !== "undefined") {
   window.ASSETS ??= ASSETS;
+  window.CONFIG ??= {};
+  window.CONFIG.SUPABASE_URL ??= SUPABASE.URL;
+  window.CONFIG.SUPABASE_ANON_KEY ??= SUPABASE.ANON_KEY;
+  window.CONFIG.SUPABASE ??= {
+    URL: SUPABASE.URL,
+    ANON_KEY: SUPABASE.ANON_KEY,
+  };
 }
