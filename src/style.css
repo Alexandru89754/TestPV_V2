@@ -19,18 +19,125 @@ html,
 body {
   height: 100%;
   margin: 0;
+  background: #0f0f10;
+  color: #f5f5f5;
+  overflow-x: hidden;
 }
 
 #root {
   min-height: 100%;
+  background: #0f0f10;
 }
 
 /* =========================
    BACKGROUND LOGIN
+========================= */
+.login-bg {
+  position: fixed;
+  inset: 0;
+  background: var(--login-bg) center / cover no-repeat fixed;
+  z-index: 0;
+}
+
+.login-overlay {
+  position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.55);
   pointer-events: none;
-  z-index: 0;
+  z-index: 1;
+}
+
+.login-wrapper {
+  position: relative;
+  z-index: 2;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+.login-card {
+  width: min(420px, 100%);
+  background: rgba(15, 15, 16, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  padding: 28px 26px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+  text-align: center;
+}
+
+.login-title {
+  margin: 0 0 6px;
+  font-size: 24px;
+}
+
+.login-subtitle {
+  margin: 0 0 20px;
+  color: #d1d5db;
+}
+
+.login-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.tab {
+  flex: 1;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  color: #e5e7eb;
+  padding: 10px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
+}
+
+.tab.active {
+  background: rgba(239, 68, 68, 0.18);
+  border-color: rgba(239, 68, 68, 0.45);
+  color: #fff;
+}
+
+.login-form {
+  display: grid;
+  gap: 12px;
+  text-align: left;
+}
+
+.login-form label {
+  font-size: 13px;
+  color: #d1d5db;
+}
+
+.login-form input {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(10, 10, 11, 0.9);
+  color: #f5f5f5;
+}
+
+.login-btn {
+  margin-top: 8px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: none;
+  background: #ef4444;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease;
+}
+
+.login-btn:hover {
+  background: #f05252;
+  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.25);
+}
+
+.login-btn:active {
+  transform: translateY(1px);
 }
 
 .app-sidebar {
@@ -533,7 +640,11 @@ body {
   display: grid;
   grid-template-columns: 260px 1fr;
   min-height: 100vh;
-  background: #0f0f10;
+  background-color: #0f0f10;
+  background-image: var(--dashboard-bg);
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
 }
 
 .dashboard-sidebar {
@@ -637,13 +748,15 @@ body {
   flex-wrap: wrap;
 }
 
+.btn,
 .btn-primary,
 .btn-secondary {
   padding: 10px 16px;
-  border-radius: 10px;
+  border-radius: 12px;
   border: none;
   font-weight: 600;
   cursor: pointer;
+  transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease;
 }
 
 .btn-primary {
@@ -654,6 +767,80 @@ body {
 .btn-secondary {
   background: rgba(255, 255, 255, 0.08);
   color: #fff;
+}
+
+.btn-ghost {
+  background: rgba(255, 255, 255, 0.06);
+  color: #e5e7eb;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.btn-ghost,
+.ghost-btn,
+.forum-tab,
+.sidebar-link,
+.app-nav-link,
+.nav-btn {
+  border-radius: 12px;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease,
+    transform 0.1s ease;
+}
+
+.btn-primary:hover,
+.btn-secondary:hover,
+.btn-ghost:hover,
+.ghost-btn:hover,
+.forum-tab:hover,
+.sidebar-link:hover,
+.app-nav-link:hover,
+.nav-btn:hover,
+.tab:hover,
+.login-btn:hover {
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active,
+.btn-secondary:active,
+.btn-ghost:active,
+.ghost-btn:active,
+.forum-tab:active,
+.sidebar-link:active,
+.app-nav-link:active,
+.nav-btn:active,
+.tab:active,
+.login-btn:active {
+  transform: translateY(0);
+}
+
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible,
+.btn-ghost:focus-visible,
+.ghost-btn:focus-visible,
+.forum-tab:focus-visible,
+.sidebar-link:focus-visible,
+.app-nav-link:focus-visible,
+.nav-btn:focus-visible,
+.tab:focus-visible,
+.login-btn:focus-visible {
+  outline: 2px solid rgba(239, 68, 68, 0.7);
+  outline-offset: 2px;
+}
+
+.btn:disabled,
+.btn-primary:disabled,
+.btn-secondary:disabled,
+.btn-ghost:disabled,
+.ghost-btn:disabled,
+.forum-tab:disabled,
+.sidebar-link:disabled,
+.app-nav-link:disabled,
+.nav-btn:disabled,
+.login-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
 }
 
 .dashboard-card {

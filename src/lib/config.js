@@ -20,6 +20,7 @@ export const STORAGE_KEYS = {
   ACTIVE_TAB: "pv_active_tab",
   CHAT_HISTORY_PREFIX_APP: "pv_chat_",
   CHAT_HISTORY_PREFIX_LEGACY: "pv_chat_history_",
+  CHAT_SESSION_PREFIX: "pv_chat_session_",
 };
 
 export const API_ENDPOINTS = {
@@ -51,6 +52,11 @@ export const API_ENDPOINTS = {
 export const ASSETS = {
   BG_WELCOME: bgWelcome,
   BG_CHAT: bgChat,
+};
+
+export const SUPABASE = {
+  URL: import.meta.env.VITE_SUPABASE_URL || "",
+  ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY || "",
 };
 
 if (typeof window !== "undefined") {

@@ -20,7 +20,8 @@ export default function LoginPage() {
 
   const isLogin = mode === "login";
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (event) => {
+    event?.preventDefault();
     setError("");
 
     const trimmedEmail = email.trim().toLowerCase();
@@ -113,14 +114,7 @@ export default function LoginPage() {
             </button>
           </div>
 
-          <form
-            className="login-form"
-            action="javascript:void(0);"
-            onSubmit={(event) => {
-              event.preventDefault();
-              handleSubmit();
-            }}
-          >
+          <form className="login-form" onSubmit={handleSubmit}>
             <label>Email</label>
             <input
               id="email"
@@ -149,13 +143,7 @@ export default function LoginPage() {
               />
             </div>
 
-            <button
-              className="login-btn"
-              id="submit"
-              type="button"
-              onClick={handleSubmit}
-              disabled={submitting}
-            >
+            <button className="login-btn" id="submit" type="submit" disabled={submitting}>
               {isLogin ? "Se connecter" : "Créer un compte"}
             </button>
 
