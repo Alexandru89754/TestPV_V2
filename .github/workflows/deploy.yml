@@ -31,11 +31,30 @@ jobs:
           node-version: 20
           cache: npm
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Install dependencies and build
+        run: npm ci && npm run build
 
-      - name: Build
-        run: npm run build
+      - name: Inspect build output
+        run: |
+          ls -la dist
+          ls -la dist/assets
+          grep -n "src/main.jsx" -R dist || true
+          head -n 30 dist/index.html
+
+      - name: Validate build output
+        run: |
+          if rg -n "src/main.jsx" dist/index.html; then
+            echo "dist/index.html still references src/main.jsx"
+            exit 1
+          fi
+          if [ ! -d dist/assets ] || [ -z "$(ls -A dist/assets)" ]; then
+            echo "dist/assets is missing or empty"
+            exit 1
+          fi
+          if rg -n "(src|href)=\"/(assets|src)" dist/index.html; then
+            echo "dist/index.html has absolute asset paths without base"
+            exit 1
+          fi
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
