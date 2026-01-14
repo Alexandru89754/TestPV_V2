@@ -20,6 +20,7 @@ export const STORAGE_KEYS = {
   ACTIVE_TAB: "pv_active_tab",
   CHAT_HISTORY_PREFIX_APP: "pv_chat_",
   CHAT_HISTORY_PREFIX_LEGACY: "pv_chat_history_",
+  CHAT_SESSION_PREFIX: "pv_chat_session_",
 };
 
 export const API_ENDPOINTS = {
@@ -53,6 +54,29 @@ export const ASSETS = {
   BG_CHAT: bgChat,
 };
 
+const resolveSupabaseValue = (key) => {
+  if (typeof window !== "undefined" && window.CONFIG) {
+    const direct = window.CONFIG[key];
+    if (direct) return direct;
+    if (window.CONFIG.SUPABASE && window.CONFIG.SUPABASE[key]) {
+      return window.CONFIG.SUPABASE[key];
+    }
+  }
+  return import.meta.env[`VITE_${key}`] || "";
+};
+
+export const SUPABASE = {
+  URL: resolveSupabaseValue("SUPABASE_URL"),
+  ANON_KEY: resolveSupabaseValue("SUPABASE_ANON_KEY"),
+};
+
 if (typeof window !== "undefined") {
   window.ASSETS ??= ASSETS;
+  window.CONFIG ??= {};
+  window.CONFIG.SUPABASE_URL ??= SUPABASE.URL;
+  window.CONFIG.SUPABASE_ANON_KEY ??= SUPABASE.ANON_KEY;
+  window.CONFIG.SUPABASE ??= {
+    URL: SUPABASE.URL,
+    ANON_KEY: SUPABASE.ANON_KEY,
+  };
 }

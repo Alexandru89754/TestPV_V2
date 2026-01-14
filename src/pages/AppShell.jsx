@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { ASSETS, ROUTES } from "../lib/config";
 import { logout } from "../lib/session";
 
@@ -11,11 +11,12 @@ const navItems = [
 
 export default function AppShell() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   return (
     <div
       className="app-shell"
-      style={{ "--app-shell-bg": `url("${ASSETS.BG_CHAT}")` }}
+      style={{ "--app-shell-bg": `url("${ASSETS.BG_WELCOME}")` }}
     >
       <div className="app-shell-overlay" aria-hidden="true"></div>
       <aside className="app-sidebar">
@@ -32,6 +33,11 @@ export default function AppShell() {
             <NavLink
               key={item.to}
               to={item.to}
+              onClick={(event) => {
+                if (location.pathname === item.to) {
+                  event.preventDefault();
+                }
+              }}
               className={({ isActive }) =>
                 `app-nav-link ${isActive ? "active" : ""}`
               }

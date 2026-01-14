@@ -1,10 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { API_ENDPOINTS, ASSETS, ROUTES, STORAGE_KEYS } from "../lib/config";
+import { API_ENDPOINTS, ASSETS, DEBUG, ROUTES, STORAGE_KEYS, SUPABASE } from "../lib/config";
 import { httpForm, httpJson } from "../lib/api";
 import { getParticipantId, getUserEmail, setParticipantId as setParticipantStorage } from "../lib/session";
 
 const typingText = "…";
+const buildSessionId = () => {
+  if (typeof crypto !== "undefined" && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return `session-${Date.now()}`;
+};
 
 export default function ChatPage() {
   const navigate = useNavigate();
@@ -17,15 +23,34 @@ export default function ChatPage() {
   const isStandalone = location.pathname === ROUTES.CHAT_PAGE;
 
   const [participantId, setParticipantId] = useState(null);
+  const [sessionId, setSessionId] = useState(() => buildSessionId());
   const [messages, setMessages] = useState([]);
   const [status, setStatus] = useState("Prêt");
   const [inputValue, setInputValue] = useState("");
   const [sending, setSending] = useState(false);
   const [cameraActive, setCameraActive] = useState(false);
+  const [ending, setEnding] = useState(false);
+  const [endError, setEndError] = useState("");
+  const [endNotice, setEndNotice] = useState("");
+
+  const userEmail = getUserEmail();
+
+  const buildInitialMessages = () => [
+    {
+      role: "bot",
+      text: "Bonjour. Je suis votre patient virtuel. Quelle est votre principale raison de consultation aujourd’hui ?",
+      ts: new Date().toISOString(),
+    },
+  ];
 
   const historyKey = useMemo(() => {
     if (!participantId) return null;
     return `${STORAGE_KEYS.CHAT_HISTORY_PREFIX_LEGACY}${participantId}`;
+  }, [participantId]);
+
+  const sessionKey = useMemo(() => {
+    if (!participantId) return null;
+    return `${STORAGE_KEYS.CHAT_SESSION_PREFIX}${participantId}`;
   }, [participantId]);
 
   useEffect(() => {
@@ -44,7 +69,7 @@ export default function ChatPage() {
   useEffect(() => {
     if (!isStandalone) return;
     document.body.classList.add("chat-standalone");
-    document.documentElement.style.setProperty("--chat-bg", `url("${ASSETS.BG_CHAT}")`);
+    document.documentElement.style.setProperty("--chat-bg", `url("${ASSETS.BG_WELCOME}")`);
     return () => {
       document.body.classList.remove("chat-standalone");
     };
@@ -57,15 +82,23 @@ export default function ChatPage() {
     const next = Array.isArray(parsed) ? parsed : [];
 
     if (next.length === 0) {
-      next.push({
-        role: "bot",
-        text: "Bonjour. Je suis votre patient virtuel. Quelle est votre principale raison de consultation aujourd’hui ?",
-        ts: new Date().toISOString(),
-      });
+      next.push(...buildInitialMessages());
     }
 
     setMessages(next);
   }, [historyKey, participantId]);
+
+  useEffect(() => {
+    if (!sessionKey) return;
+    const stored = localStorage.getItem(sessionKey);
+    if (stored) {
+      setSessionId(stored);
+    } else {
+      const fresh = buildSessionId();
+      localStorage.setItem(sessionKey, fresh);
+      setSessionId(fresh);
+    }
+  }, [sessionKey]);
 
   useEffect(() => {
     if (!historyKey) return;
@@ -123,6 +156,86 @@ export default function ChatPage() {
       setTimeout(() => {
         inputRef.current?.focus();
       }, 0);
+    }
+  };
+
+  const buildChatLogs = (items) =>
+    items
+      .filter((message) => message.text && message.text !== typingText)
+      .map((message) => ({
+        user_email: userEmail,
+        session_id: sessionId,
+        message: JSON.stringify({ role: message.role, text: message.text }),
+        created_at: message.ts || new Date().toISOString(),
+      }));
+
+  const handleEndDiscussion = async () => {
+    setEndError("");
+    setEndNotice("");
+
+    if (DEBUG) {
+      console.warn("[DEBUG] close discussion config", {
+        hasWindowConfig: typeof window !== "undefined" && Boolean(window.CONFIG),
+        supabaseUrl: SUPABASE.URL,
+        supabaseAnonKey: SUPABASE.ANON_KEY ? "present" : "missing",
+      });
+    }
+
+    if (!userEmail) {
+      setEndError("Impossible de récupérer l’email utilisateur.");
+      return;
+    }
+
+    if (!sessionId) {
+      setEndError("Session de discussion introuvable.");
+      return;
+    }
+
+    const logs = buildChatLogs(messages);
+
+    if (logs.length === 0) {
+      setEndError("Aucun message à sauvegarder.");
+      return;
+    }
+
+    if (!SUPABASE.URL || !SUPABASE.ANON_KEY) {
+      setEndError("Configuration Supabase manquante.");
+      return;
+    }
+
+    try {
+      setEnding(true);
+      const res = await fetch(`${SUPABASE.URL}/rest/v1/chat_logs`, {
+        method: "POST",
+        headers: {
+          apikey: SUPABASE.ANON_KEY,
+          Authorization: `Bearer ${SUPABASE.ANON_KEY}`,
+          "Content-Type": "application/json",
+          Prefer: "return=minimal",
+        },
+        body: JSON.stringify(logs),
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || "Erreur Supabase.");
+      }
+
+      const freshSession = buildSessionId();
+      setSessionId(freshSession);
+      if (sessionKey) {
+        localStorage.setItem(sessionKey, freshSession);
+      }
+      setMessages(buildInitialMessages());
+      setStatus("Prêt");
+      setEndNotice("Discussion sauvegardée et réinitialisée.");
+    } catch (err) {
+      if (DEBUG) {
+        console.error("[DEBUG] close discussion error", err);
+      }
+      setEndError(`Erreur lors de la sauvegarde: ${err.message || err}`);
+    } finally {
+      setEnding(false);
     }
   };
 
@@ -316,7 +429,18 @@ export default function ChatPage() {
               <button className="btn btn-ghost" id="change-id" type="button" onClick={handleChangeId}>
                 Changer d’identifiant
               </button>
+              <button
+                className="btn btn-secondary"
+                id="close-session"
+                type="button"
+                onClick={handleEndDiscussion}
+                disabled={ending}
+              >
+                Fermer la discussion
+              </button>
             </footer>
+            {endError ? <p className="status-text error">{endError}</p> : null}
+            {endNotice ? <p className="status-text success">{endNotice}</p> : null}
           </section>
         </div>
       </div>

@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ROUTES } from "../lib/config";
+import { ASSETS, ROUTES } from "../lib/config";
 
 const LEARN_SECTIONS = [
   { id: "clinical-cases", label: "Clinical Cases" },
@@ -72,7 +72,12 @@ export default function HomePage() {
     }
   }, [navigate, section]);
 
+  useEffect(() => {
+    document.documentElement.style.setProperty("--dashboard-bg", `url("${ASSETS.BG_WELCOME}")`);
+  }, []);
+
   const handleSelect = (nextSection) => {
+    if (nextSection === activeSection) return;
     navigate(`${ROUTES.HOME_PAGE}/${nextSection}`);
   };
 
