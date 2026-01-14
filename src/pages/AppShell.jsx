@@ -3,7 +3,6 @@ import { ROUTES } from "../lib/config";
 import { logout } from "../lib/session";
 
 const navItems = [
-  { to: "chatbot", label: "Patient virtuel" },
   { to: "forum", label: "Forum" },
   { to: "profile", label: "Mon profil" },
   { to: "friends", label: "Amis" },
