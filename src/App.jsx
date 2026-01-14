@@ -2,6 +2,10 @@ import { HashRouter, Navigate, Route, Routes, useLocation } from "react-router-d
 import LoginPage from "./pages/LoginPage.jsx";
 import HomePage from "./pages/HomePage.jsx";
 import AppPage from "./pages/AppPage.jsx";
+import AppShell from "./pages/AppShell.jsx";
+import ProfilePage from "./pages/ProfilePage.jsx";
+import FriendsPage from "./pages/FriendsPage.jsx";
+import ForumPage from "./pages/ForumPage.jsx";
 import ChatPage from "./pages/ChatPage.jsx";
 import AuthGuard from "./components/AuthGuard.jsx";
 import { DEBUG, ROUTES } from "./lib/config.js";
@@ -40,13 +44,22 @@ export default function App() {
           }
         />
         <Route
-          path={ROUTES.APP_PAGE}
+          path={`${ROUTES.APP_PAGE}/*`}
           element={
             <AuthGuard>
-              <AppPage />
+              <AppShell />
             </AuthGuard>
           }
-        />
+        >
+          <Route index element={<Navigate to="forum" replace />} />
+          <Route path="patient-virtuel" element={<ChatPage />} />
+          <Route path="chatbot" element={<Navigate to="patient-virtuel" replace />} />
+          <Route path="patient" element={<Navigate to="patient-virtuel" replace />} />
+          <Route path="forum" element={<ForumPage />} />
+          <Route path="profile" element={<ProfilePage />} />
+          <Route path="friends" element={<FriendsPage />} />
+          <Route path="legacy" element={<AppPage />} />
+        </Route>
         <Route
           path={ROUTES.CHAT_PAGE}
           element={
