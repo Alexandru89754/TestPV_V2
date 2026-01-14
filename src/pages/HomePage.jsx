@@ -1,27 +1,83 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ROUTES } from "../lib/config";
+
+const LEARN_SECTIONS = [
+  { id: "clinical-cases", label: "Clinical Cases" },
+  { id: "study", label: "Study" },
+  { id: "qbank", label: "Qbank" },
+  { id: "file-manager", label: "File Manager" },
+  { id: "interview-lab", label: "Interview Lab" },
+];
+
+const CONNECT_SECTIONS = [
+  { id: "network", label: "Network" },
+  { id: "messages", label: "Message" },
+  { id: "feed", label: "Feed" },
+  { id: "events", label: "Events" },
+];
+
+const CONTENT = {
+  "clinical-cases": {
+    title: "Clinical Cases",
+    description:
+      "Lancez des scénarios interactifs et entraînez-vous à la prise de décision clinique.",
+  },
+  study: {
+    title: "Study",
+    description: "Accédez à vos parcours d’étude et reprenez votre progression.",
+  },
+  qbank: {
+    title: "Qbank",
+    description: "Révisez avec des banques de questions personnalisées.",
+  },
+  "file-manager": {
+    title: "File Manager",
+    description: "Centralisez vos notes et documents de cours.",
+  },
+  "interview-lab": {
+    title: "Interview Lab",
+    description: "Entraînez-vous aux entretiens cliniques avec feedback guidé.",
+  },
+  network: {
+    title: "Network",
+    description: "Retrouvez vos collègues et suivez leurs activités.",
+  },
+  messages: {
+    title: "Message",
+    description: "Discutez avec votre réseau et gérez vos conversations.",
+  },
+  feed: {
+    title: "Feed",
+    description: "Découvrez les nouveautés et annonces de la communauté.",
+  },
+  events: {
+    title: "Events",
+    description: "Inscrivez-vous aux prochains événements et webinaires.",
+  },
+};
 
 export default function HomePage() {
   const navigate = useNavigate();
   const { section } = useParams();
-  const [activeSection, setActiveSection] = useState("home");
-  const [activeNav, setActiveNav] = useState(null);
+  const activeSection = section || "clinical-cases";
+  const activeContent = useMemo(
+    () => CONTENT[activeSection] || CONTENT["clinical-cases"],
+    [activeSection]
+  );
 
   useEffect(() => {
-    const nextSection = section || "home";
-    setActiveSection(nextSection);
-    setActiveNav(section || null);
-  }, [section]);
+    if (!section) {
+      navigate(`${ROUTES.HOME_PAGE}/clinical-cases`, { replace: true });
+    }
+  }, [navigate, section]);
 
-  const handleSelect = (section) => {
-    setActiveSection(section);
-    setActiveNav(section);
-    navigate(`${ROUTES.HOME_PAGE}/${section}`);
+  const handleSelect = (nextSection) => {
+    navigate(`${ROUTES.HOME_PAGE}/${nextSection}`);
   };
 
-  const handleLaunchApp = () => {
-    navigate(ROUTES.APP_PAGE);
+  const handleLaunchClinicalCases = () => {
+    handleSelect("clinical-cases");
   };
 
   const handleLaunchChat = () => {
@@ -29,123 +85,85 @@ export default function HomePage() {
   };
 
   return (
-    <>
-      <div className="auth-bg"></div>
-      <div className="auth-overlay"></div>
-
-      <div className="app-layout">
-        <aside className="sidebar">
-          <div className="sidebar-header">
-            <h2>Patient virtuel</h2>
+    <div className="dashboard-shell">
+      <aside className="dashboard-sidebar">
+        <div className="sidebar-brand">
+          <span className="brand-dot"></span>
+          <div>
+            <p className="brand-title">Patient virtuel</p>
+            <p className="brand-subtitle">Dashboard</p>
           </div>
+        </div>
 
-          <nav className="sidebar-nav">
-            {[
-              { id: "home", label: "Accueil" },
-              { id: "profile", label: "Mon profil" },
-              { id: "friends", label: "Mes amis" },
-              { id: "forum", label: "Discussion" },
-              { id: "updates", label: "Mise à jour recherche" },
-            ].map((item) => (
+        <div className="sidebar-group">
+          <p className="sidebar-heading">Learn</p>
+          <div className="sidebar-links">
+            {LEARN_SECTIONS.map((item) => (
               <button
                 key={item.id}
-                className={`nav-item ${activeNav === item.id ? "active" : ""}`}
-                data-section={item.id}
+                className={`sidebar-link ${activeSection === item.id ? "active" : ""}`}
                 onClick={() => handleSelect(item.id)}
               >
                 {item.label}
               </button>
             ))}
+          </div>
+        </div>
 
-            <div className="nav-divider"></div>
-
-            <button
-              className={`nav-item beta ${activeNav === "ai" ? "active" : ""}`}
-              data-section="ai"
-              onClick={() => handleSelect("ai")}
-            >
-              Outil AI <span className="beta-pill">BETA</span>
-            </button>
-          </nav>
-        </aside>
-
-        <main className="content">
-          <section
-            className={`content-section ${activeSection === "home" ? "active" : ""}`}
-            id="section-home"
-          >
-            <h1>Bienvenue</h1>
-            <p className="content-text">
-              Sélectionnez une option dans le menu à gauche pour commencer.
-            </p>
-            <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginTop: "16px" }}>
-              <button className="btn-primary" onClick={handleLaunchApp}>
-                Lancer le patient virtuel
+        <div className="sidebar-group">
+          <p className="sidebar-heading">Connect</p>
+          <div className="sidebar-links">
+            {CONNECT_SECTIONS.map((item) => (
+              <button
+                key={item.id}
+                className={`sidebar-link ${activeSection === item.id ? "active" : ""}`}
+                onClick={() => handleSelect(item.id)}
+              >
+                {item.label}
               </button>
-              <button className="btn-primary" onClick={handleLaunchChat}>
-                Ouvrir le chat classique
-              </button>
-            </div>
-          </section>
+            ))}
+          </div>
+        </div>
+      </aside>
 
-          <section
-            className={`content-section ${activeSection === "profile" ? "active" : ""}`}
-            id="section-profile"
-          >
-            <h1>Mon profil</h1>
-            <p className="content-text">
-              Modification de l’avatar et de la biographie (à venir).
-            </p>
-          </section>
-
-          <section
-            className={`content-section ${activeSection === "friends" ? "active" : ""}`}
-            id="section-friends"
-          >
-            <h1>Mes amis</h1>
-            <p className="content-text">
-              Rechercher des amis, gérer les demandes et discuter de cas cliniques.
-            </p>
-          </section>
-
-          <section
-            className={`content-section ${activeSection === "forum" ? "active" : ""}`}
-            id="section-forum"
-          >
-            <h1>Discussion</h1>
-            <p className="content-text">Forum général pour échanger entre étudiants.</p>
-          </section>
-
-          <section
-            className={`content-section ${activeSection === "updates" ? "active" : ""}`}
-            id="section-updates"
-          >
-            <h1>Mise à jour recherche</h1>
-            <pre className="code-block">
-              Votre participation est importante ! Nous vous tiendrons au courant des résultats au fur et à mesure
-            </pre>
-          </section>
-
-          <section
-            className={`content-section ${activeSection === "ai" ? "active" : ""}`}
-            id="section-ai"
-          >
-            <h1>Outil AI – Patient virtuel</h1>
-            <p className="content-text">Le chatbot est accessible ici.</p>
-
-            <button className="btn-primary" onClick={handleLaunchApp}>
+      <main className="dashboard-main">
+        <header className="dashboard-header">
+          <div>
+            <p className="eyebrow">Dashboard</p>
+            <h1>{activeContent.title}</h1>
+            <p className="dashboard-subtitle">{activeContent.description}</p>
+          </div>
+          <div className="dashboard-actions">
+            <button className="btn-primary" onClick={handleLaunchClinicalCases}>
               Lancer le patient virtuel
             </button>
-            <button
-              className="btn-primary"
-              style={{ marginLeft: "12px" }}
-              onClick={handleLaunchChat}
-            >
+            <button className="btn-secondary" onClick={handleLaunchChat}>
               Ouvrir le chat classique
             </button>
-          </section>
-        </main>
-      </div>
-    </>
+          </div>
+        </header>
+
+        <section className="dashboard-card">
+          <h2>{activeContent.title}</h2>
+          <p>{activeContent.description}</p>
+          <div className="dashboard-card-grid">
+            <div>
+              <h3>Prochaine étape</h3>
+              <p>
+                Choisissez un module dans la barre latérale ou démarrez directement les
+                Clinical Cases.
+              </p>
+            </div>
+            <div>
+              <h3>Conseil</h3>
+              <p>
+                Revenez régulièrement pour suivre vos progrès et débloquer de nouvelles
+                activités.
+              </p>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
   );
 }
