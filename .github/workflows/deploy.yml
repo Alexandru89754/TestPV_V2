@@ -39,6 +39,7 @@ jobs:
           ls -la dist
           ls -la dist/assets
           grep -n "src/main.jsx" -R dist || true
+          head -n 30 dist/index.html
 
       - name: Validate build output
         run: |
