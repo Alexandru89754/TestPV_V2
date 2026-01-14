@@ -17,6 +17,15 @@ export function setUserEmail(email) {
   localStorage.setItem(STORAGE_KEYS.USER_EMAIL, email);
 }
 
+export function getParticipantId() {
+  return localStorage.getItem(STORAGE_KEYS.PARTICIPANT_ID);
+}
+
+export function setParticipantId(id) {
+  if (!id) return;
+  localStorage.setItem(STORAGE_KEYS.PARTICIPANT_ID, id);
+}
+
 export function clearSession({ clearAll = false } = {}) {
   if (clearAll) {
     localStorage.clear();
@@ -26,6 +35,7 @@ export function clearSession({ clearAll = false } = {}) {
   localStorage.removeItem(STORAGE_KEYS.TOKEN);
   localStorage.removeItem(STORAGE_KEYS.USER_EMAIL);
   localStorage.removeItem(STORAGE_KEYS.ACTIVE_TAB);
+  localStorage.removeItem(STORAGE_KEYS.PARTICIPANT_ID);
 }
 
 export async function logout({ redirectTo = ROUTES.LOGIN_PAGE, clearAll = true, navigate } = {}) {

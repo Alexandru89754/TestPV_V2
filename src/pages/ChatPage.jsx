@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_ENDPOINTS, ASSETS, ROUTES, STORAGE_KEYS } from "../lib/config";
 import { httpForm, httpJson } from "../lib/api";
+import { getParticipantId, getUserEmail, setParticipantId as setParticipantStorage } from "../lib/session";
 
 const typingText = "…";
 
@@ -26,13 +27,16 @@ export default function ChatPage() {
   }, [participantId]);
 
   useEffect(() => {
-    const storedId = localStorage.getItem(STORAGE_KEYS.PARTICIPANT_ID);
-    if (!storedId) {
+    const storedId = getParticipantId();
+    const fallbackId = getUserEmail();
+    const nextId = storedId || fallbackId;
+    if (!nextId) {
       navigate(ROUTES.LOGIN_PAGE, { replace: true });
       return;
     }
 
-    setParticipantId(storedId);
+    setParticipantStorage(nextId);
+    setParticipantId(nextId);
   }, [navigate]);
 
   useEffect(() => {
