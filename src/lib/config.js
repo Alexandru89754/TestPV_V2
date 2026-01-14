@@ -1,10 +1,20 @@
 import bgWelcome from "../assets/image_out.png";
 import bgChat from "../assets/image_in.png";
 
-export const API_BASE_URL = "https://patient-virtuel-platform-backend.onrender.com";
+const FALLBACK_BACKEND_URL = "https://patient-virtuel-platform-backend.onrender.com";
 export const DEBUG = true;
 
-const apiUrl = (path) => `${API_BASE_URL}${path}`;
+const resolveBackendUrl = () => {
+  if (typeof window !== "undefined" && window.CONFIG && window.CONFIG.BACKEND_URL) {
+    return window.CONFIG.BACKEND_URL;
+  }
+  return import.meta.env.VITE_BACKEND_URL || FALLBACK_BACKEND_URL;
+};
+
+export const BACKEND_URL = resolveBackendUrl();
+export const API_BASE_URL = BACKEND_URL;
+
+const apiUrl = (path) => `${BACKEND_URL}${path}`;
 
 export const ROUTES = {
   LOGIN_PAGE: "/login",
@@ -30,12 +40,14 @@ export const API_ENDPOINTS = {
   AUTH_LOGOUT: apiUrl("/auth/logout"),
 
   CHAT: apiUrl("/chat"),
-  CHAT_END: apiUrl("/chat/end"),
+  CHAT_END: apiUrl("/api/chat/end"),
   UPLOAD: apiUrl("/upload-video"),
 
   PROFILE_ME: apiUrl("/profiles/me"),
   PROFILE_UPDATE: apiUrl("/profiles/me"),
   PROFILE_AVATAR_UPLOAD: apiUrl("/profiles/me/avatar"),
+  PROFILE: apiUrl("/api/profile"),
+  PROFILE_BY_ID_PREFIX: apiUrl("/api/profile/"),
 
   FRIENDS_LIST: apiUrl("/friends"),
   FRIEND_INCOMING: apiUrl("/friends/requests/incoming"),
@@ -73,6 +85,7 @@ export const SUPABASE = {
 if (typeof window !== "undefined") {
   window.ASSETS ??= ASSETS;
   window.CONFIG ??= {};
+  window.CONFIG.BACKEND_URL ??= BACKEND_URL;
   window.CONFIG.SUPABASE_URL ??= SUPABASE.URL;
   window.CONFIG.SUPABASE_ANON_KEY ??= SUPABASE.ANON_KEY;
   window.CONFIG.SUPABASE ??= {

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { getToken } from "../lib/session";
-import { getMyProfile, updateMyProfile, uploadAvatar } from "../lib/client";
+import { DEBUG } from "../lib/config";
+import { getToken, getUserEmail } from "../lib/session";
+import { getMyProfile, updateMyProfile } from "../lib/client";
 
 const USERNAME_REGEX = /^[a-zA-Z0-9_]{3,20}$/;
 const MAX_AVATAR_SIZE = 5 * 1024 * 1024;
@@ -30,11 +31,16 @@ export default function ProfilePage() {
     const loadProfile = async () => {
       try {
         const token = getToken();
-        const data = await getMyProfile({ token });
+        const userId = getUserEmail();
+        if (!userId) {
+          setStatus({ state: "error", message: "Utilisateur introuvable. Veuillez vous reconnecter." });
+          return;
+        }
+        const data = await getMyProfile({ token, userId });
         setProfile({
           username: data?.username || "",
           bio: data?.bio || "",
-          avatarUrl: data?.avatarUrl || "",
+          avatarUrl: data?.avatar_url || data?.avatarUrl || "",
         });
       } catch (error) {
         setStatus({ state: "error", message: error.message || "Erreur lors du chargement." });
@@ -74,6 +80,18 @@ export default function ProfilePage() {
     }
   };
 
+  const readAvatarBase64 = (file) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = typeof reader.result === "string" ? reader.result : "";
+        const [, base64 = ""] = result.split(",");
+        resolve(base64);
+      };
+      reader.onerror = () => reject(new Error("Erreur lors de la lecture de l’image."));
+      reader.readAsDataURL(file);
+    });
+
   const handleSave = async () => {
     if (!USERNAME_REGEX.test(profile.username)) {
       setStatus({
@@ -86,30 +104,46 @@ export default function ProfilePage() {
     setStatus({ state: "loading", message: "Enregistrement..." });
     try {
       const token = getToken();
+      const userId = getUserEmail();
+      if (!userId) {
+        setStatus({ state: "error", message: "Utilisateur introuvable. Veuillez vous reconnecter." });
+        return;
+      }
       let avatarUrl = profile.avatarUrl;
+      let avatarBase64 = "";
 
       if (avatarFile) {
-        const upload = await uploadAvatar({ token, file: avatarFile });
-        avatarUrl = upload?.url || upload?.avatarUrl || upload?.publicUrl || avatarUrl;
+        avatarBase64 = await readAvatarBase64(avatarFile);
       }
 
-      const updated = await updateMyProfile({
+      const { data: updated, status: responseStatus } = await updateMyProfile({
         token,
+        userId,
         profile: {
+          user_id: userId,
           username: profile.username,
           bio: profile.bio,
-          avatarUrl,
+          avatar_url: avatarUrl || undefined,
+          avatar_base64: avatarBase64 || undefined,
         },
       });
+
+      if (DEBUG) {
+        console.warn("[DEBUG] profile save status", responseStatus);
+      }
 
       setProfile({
         username: updated?.username || profile.username,
         bio: updated?.bio || profile.bio,
-        avatarUrl: updated?.avatarUrl || avatarUrl,
+        avatarUrl: updated?.avatar_url || updated?.avatarUrl || avatarUrl,
       });
       setAvatarFile(null);
       setStatus({ state: "success", message: "Profil enregistré." });
     } catch (error) {
+      console.error("[DEBUG] profile save error", {
+        status: error?.status,
+        message: error?.message,
+      });
       setStatus({ state: "error", message: error.message || "Erreur lors de la sauvegarde." });
     }
   };

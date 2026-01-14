@@ -1,16 +1,31 @@
 import { API_BASE_URL, API_ENDPOINTS } from "./config";
-import { httpForm, httpJson } from "./api";
+import { httpForm, httpJson, httpJsonWithStatus } from "./api";
 
-export async function getMyProfile({ token }) {
-  return httpJson(API_ENDPOINTS.PROFILE_ME, { token });
+export async function getMyProfile({ token, userId }) {
+  const url = `${API_ENDPOINTS.PROFILE_BY_ID_PREFIX}${encodeURIComponent(userId)}`;
+  return httpJson(url, { token });
 }
 
-export async function updateMyProfile({ token, profile }) {
-  return httpJson(API_ENDPOINTS.PROFILE_UPDATE, {
-    method: "PUT",
-    token,
-    body: profile,
-  });
+export async function updateMyProfile({ token, userId, profile }) {
+  try {
+    return await httpJsonWithStatus(
+      `${API_ENDPOINTS.PROFILE_BY_ID_PREFIX}${encodeURIComponent(userId)}`,
+      {
+        method: "PUT",
+        token,
+        body: profile,
+      }
+    );
+  } catch (error) {
+    if (error?.status === 404 || error?.status === 405) {
+      return httpJsonWithStatus(API_ENDPOINTS.PROFILE, {
+        method: "POST",
+        token,
+        body: profile,
+      });
+    }
+    throw error;
+  }
 }
 
 export async function uploadAvatar({ token, file }) {

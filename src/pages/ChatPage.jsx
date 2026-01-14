@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { API_ENDPOINTS, ASSETS, DEBUG, ROUTES, STORAGE_KEYS, SUPABASE } from "../lib/config";
+import { API_ENDPOINTS, ASSETS, BACKEND_URL, DEBUG, ROUTES, STORAGE_KEYS } from "../lib/config";
 import { httpForm, httpJson } from "../lib/api";
 import { getParticipantId, getUserEmail, setParticipantId as setParticipantStorage } from "../lib/session";
 
@@ -176,8 +176,7 @@ export default function ChatPage() {
     if (DEBUG) {
       console.warn("[DEBUG] close discussion config", {
         hasWindowConfig: typeof window !== "undefined" && Boolean(window.CONFIG),
-        supabaseUrl: SUPABASE.URL,
-        supabaseAnonKey: SUPABASE.ANON_KEY ? "present" : "missing",
+        backendUrl: BACKEND_URL || "missing",
       });
     }
 
@@ -198,27 +197,36 @@ export default function ChatPage() {
       return;
     }
 
-    if (!SUPABASE.URL || !SUPABASE.ANON_KEY) {
-      setEndError("Configuration Supabase manquante.");
+    if (!BACKEND_URL) {
+      setEndError("Configuration backend manquante.");
       return;
     }
 
     try {
       setEnding(true);
-      const res = await fetch(`${SUPABASE.URL}/rest/v1/chat_logs`, {
+      const res = await fetch(API_ENDPOINTS.CHAT_END, {
         method: "POST",
         headers: {
-          apikey: SUPABASE.ANON_KEY,
-          Authorization: `Bearer ${SUPABASE.ANON_KEY}`,
           "Content-Type": "application/json",
-          Prefer: "return=minimal",
         },
-        body: JSON.stringify(logs),
+        body: JSON.stringify({
+          user_id: participantId || userEmail,
+          conversation_id: sessionId,
+          logs,
+          meta: {
+            user_email: userEmail,
+            message_count: logs.length,
+          },
+        }),
       });
+
+      if (DEBUG) {
+        console.warn("[DEBUG] close discussion status", res.status);
+      }
 
       if (!res.ok) {
         const text = await res.text();
-        throw new Error(text || "Erreur Supabase.");
+        throw new Error(text || "Erreur backend.");
       }
 
       const freshSession = buildSessionId();
@@ -230,9 +238,7 @@ export default function ChatPage() {
       setStatus("Prêt");
       setEndNotice("Discussion sauvegardée et réinitialisée.");
     } catch (err) {
-      if (DEBUG) {
-        console.error("[DEBUG] close discussion error", err);
-      }
+      console.error("[DEBUG] close discussion error", err);
       setEndError(`Erreur lors de la sauvegarde: ${err.message || err}`);
     } finally {
       setEnding(false);
