@@ -1,11 +1,13 @@
-document.addEventListener("DOMContentLoaded", () => {
+function initWelcomePage() {
   if (!window.CONFIG) {
     alert("Erreur: config.js n'est pas chargé. Vérifie l'ordre des <script>.");
     return;
   }
 
-  const BG_WELCOME = window.CONFIG.BG_WELCOME;
-  const PARTICIPANT_KEY = window.CONFIG.PARTICIPANT_KEY;
+  const C = window.CONFIG;
+
+  const BG_WELCOME = C.ASSETS.BG_WELCOME;
+  const PARTICIPANT_KEY = C.STORAGE_KEYS.PARTICIPANT_ID;
 
   const appBg = document.getElementById("app-bg");
   const participantInput = document.getElementById("participant-id");
@@ -37,7 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     localStorage.setItem(PARTICIPANT_KEY, pid);
-    window.location.href = "chat.html";
+    window.location.href = C.ROUTES.CHAT_PAGE;
   });
 
   participantInput.addEventListener("keydown", (e) => {
@@ -46,4 +48,6 @@ document.addEventListener("DOMContentLoaded", () => {
       acceptBtn.click();
     }
   });
-});
+}
+
+document.addEventListener("DOMContentLoaded", initWelcomePage);
