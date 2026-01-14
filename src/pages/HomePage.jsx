@@ -1,12 +1,22 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
 export default function HomePage() {
+  const navigate = useNavigate();
+  const { section } = useParams();
   const [activeSection, setActiveSection] = useState("home");
   const [activeNav, setActiveNav] = useState(null);
+
+  useEffect(() => {
+    const nextSection = section || "home";
+    setActiveSection(nextSection);
+    setActiveNav(section || null);
+  }, [section]);
 
   const handleSelect = (section) => {
     setActiveSection(section);
     setActiveNav(section);
+    navigate(`/home/${section}`);
   };
 
   return (

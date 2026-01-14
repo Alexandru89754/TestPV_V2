@@ -18,6 +18,14 @@ export default function App() {
             </AuthGuard>
           }
         />
+        <Route
+          path={`${ROUTES.HOME_PAGE}/:section`}
+          element={
+            <AuthGuard>
+              <HomePage />
+            </AuthGuard>
+          }
+        />
         <Route path="*" element={<Navigate to={ROUTES.LOGIN_PAGE} replace />} />
       </Routes>
     </BrowserRouter>
