@@ -1,9 +1,14 @@
 (function () {
-  const API_BASE_URL = "https://patient-virtuel-platform-backend.onrender.com";
+  const existingConfig = window.CONFIG || {};
+  const BACKEND_URL =
+    existingConfig.BACKEND_URL || "https://patient-virtuel-platform-backend.onrender.com";
+  const API_BASE_URL = BACKEND_URL;
 
   const apiUrl = (path) => `${API_BASE_URL}${path}`;
 
   window.CONFIG = {
+    ...existingConfig,
+    BACKEND_URL,
     API_BASE_URL,
 
     ROUTES: {
@@ -29,11 +34,13 @@
       AUTH_LOGOUT: apiUrl("/auth/logout"),
 
       CHAT: apiUrl("/chat"),
-      CHAT_END: apiUrl("/chat/end"),
+      CHAT_END: apiUrl("/api/chat/end"),
       UPLOAD: apiUrl("/upload-video"),
 
       PROFILE_ME: apiUrl("/profiles/me"),
       PROFILE_UPDATE: apiUrl("/profiles/me"),
+      PROFILE: apiUrl("/api/profile"),
+      PROFILE_BY_ID_PREFIX: apiUrl("/api/profile/"),
 
       FRIENDS_LIST: apiUrl("/friends"),
       FRIEND_INCOMING: apiUrl("/friends/requests/incoming"),
