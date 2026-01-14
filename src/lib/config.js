@@ -3,9 +3,7 @@ export const API_BASE_URL = "https://patient-virtuel-platform-backend.onrender.c
 const apiUrl = (path) => `${API_BASE_URL}${path}`;
 
 export const ROUTES = {
-  LOGIN_PAGE: "/",
-  APP_PAGE: "/app",
-  CHAT_PAGE: "/chat",
+  LOGIN_PAGE: "/login",
   HOME_PAGE: "/home",
 };
 
