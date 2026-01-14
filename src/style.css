@@ -327,10 +327,6 @@ body {
     align-items: flex-start;
   }
 }
-
-/* =========================
-   APP SHELL
-========================= */
 .app-shell {
   display: grid;
   grid-template-columns: 240px 1fr;
