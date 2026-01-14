@@ -56,6 +56,14 @@ jobs:
             exit 1
           fi
 
+      - name: Preview smoke test
+        run: |
+          npm run preview -- --host 127.0.0.1 --port 4173 &
+          preview_pid=$!
+          sleep 2
+          curl -sSf http://127.0.0.1:4173/TestPV_V2/ | head -n 30
+          kill $preview_pid
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
