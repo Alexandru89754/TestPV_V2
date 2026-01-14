@@ -1,0 +1,85 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: .
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies and build
+        run: npm ci && npm run build
+
+      - name: Inspect build output
+        run: |
+          ls -la dist
+          ls -la dist/assets
+          grep -n "src/main.jsx" -R dist || true
+          head -n 30 dist/index.html
+
+      - name: Validate build output
+        run: |
+          if rg -n "src/main.jsx" dist/index.html; then
+            echo "dist/index.html still references src/main.jsx"
+            exit 1
+          fi
+          if [ ! -d dist/assets ] || [ -z "$(ls -A dist/assets)" ]; then
+            echo "dist/assets is missing or empty"
+            exit 1
+          fi
+          if rg -n "(src|href)=\"/(assets|src)" dist/index.html; then
+            echo "dist/index.html has absolute asset paths without base"
+            exit 1
+          fi
+          if ! rg -n "chatbot" dist/assets; then
+            echo "Chatbot route string missing from bundle output"
+            exit 1
+          fi
+
+      - name: Preview smoke test
+        run: |
+          npm run preview -- --host 127.0.0.1 --port 4173 &
+          preview_pid=$!
+          sleep 2
+          curl -sSf http://127.0.0.1:4173/TestPV_V2/ | head -n 30
+          kill $preview_pid
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
