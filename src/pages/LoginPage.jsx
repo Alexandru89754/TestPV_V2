@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { API_ENDPOINTS, ASSETS, ROUTES } from "../lib/config";
 import { httpJson } from "../lib/api";
-import { clearSession, setToken, setUserEmail } from "../lib/session";
+import { clearSession, setParticipantId, setToken, setUserEmail } from "../lib/session";
 import { useNavigate } from "react-router-dom";
 
 export default function LoginPage() {
