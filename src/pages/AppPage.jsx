@@ -166,7 +166,7 @@ export default function AppPage() {
         body {
           margin: 0;
           min-height: 100vh;
-          background: var(--app-bg, url("./asset/image_in.png")) center / cover no-repeat fixed;
+          background: var(--app-bg, url("${ASSETS.BG_CHAT}")) center / cover no-repeat fixed;
           overflow-y: auto;
         }
 

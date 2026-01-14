@@ -1,3 +1,6 @@
+import bgWelcome from "../assets/image_out.png";
+import bgChat from "../assets/image_in.png";
+
 export const API_BASE_URL = "https://patient-virtuel-platform-backend.onrender.com";
 export const DEBUG = true;
 
@@ -45,6 +48,6 @@ export const API_ENDPOINTS = {
 };
 
 export const ASSETS = {
-  BG_WELCOME: "/asset/image_out.png",
-  BG_CHAT: "/asset/image_in.png",
+  BG_WELCOME: bgWelcome,
+  BG_CHAT: bgChat,
 };
