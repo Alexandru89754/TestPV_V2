@@ -1,14 +1,18 @@
-document.addEventListener("DOMContentLoaded", () => {
+function initChatPage() {
   if (!window.CONFIG) {
     alert("Erreur: config.js n'est pas chargé. Vérifie l'ordre des <script>.");
     return;
   }
 
-  const BACKEND_CHAT_URL = window.CONFIG.CHAT_URL;
-  const BACKEND_UPLOAD_URL = window.CONFIG.UPLOAD_URL;
+  const C = window.CONFIG;
+  const api = window.API;
 
-  const BG_CHAT = window.CONFIG.BG_CHAT;
-  const PARTICIPANT_KEY = window.CONFIG.PARTICIPANT_KEY;
+  const BACKEND_CHAT_URL = C.API_ENDPOINTS.CHAT;
+  const BACKEND_UPLOAD_URL = C.API_ENDPOINTS.UPLOAD;
+
+  const BG_CHAT = C.ASSETS.BG_CHAT;
+  const PARTICIPANT_KEY = C.STORAGE_KEYS.PARTICIPANT_ID;
+  const HISTORY_PREFIX = C.STORAGE_KEYS.CHAT_HISTORY_PREFIX_LEGACY;
 
   const appBg = document.getElementById("app-bg");
   const participantPill = document.getElementById("participant-pill");
@@ -34,7 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function historyKeyFor(participantId) {
-    return `pv_chat_history_${participantId}`;
+    return `${HISTORY_PREFIX}${participantId}`;
   }
 
   function addMessageToUI(text, role) {
@@ -73,22 +77,15 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function sendToBackend(message, participantId) {
-    const res = await fetch(BACKEND_CHAT_URL, {
+    return api.httpJson(BACKEND_CHAT_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message, userId: participantId }),
+      body: { message, userId: participantId },
     });
-
-    if (!res.ok) {
-      const t = await res.text().catch(() => "");
-      throw new Error(`chat http ${res.status} ${t}`);
-    }
-    return res.json();
   }
 
   const participantId = localStorage.getItem(PARTICIPANT_KEY);
   if (!participantId) {
-    window.location.href = "index.html";
+    window.location.href = C.ROUTES.LOGIN_PAGE;
     return;
   }
 
@@ -160,7 +157,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   changeIdBtn.addEventListener("click", () => {
     localStorage.removeItem(PARTICIPANT_KEY);
-    window.location.href = "index.html";
+    window.location.href = C.ROUTES.LOGIN_PAGE;
   });
 
   /* =========================
@@ -265,4 +262,6 @@ document.addEventListener("DOMContentLoaded", () => {
       stopTracks();
     }
   });
-});
+}
+
+document.addEventListener("DOMContentLoaded", initChatPage);

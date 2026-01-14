@@ -91,24 +91,7 @@
     </main>
   </div>
 
-  <!-- NAV SCRIPT -->
-  <script>
-    const buttons = document.querySelectorAll(".nav-item");
-    const sections = document.querySelectorAll(".content-section");
-
-    buttons.forEach(btn => {
-      btn.addEventListener("click", () => {
-        const target = btn.dataset.section;
-
-        sections.forEach(sec => {
-          sec.classList.toggle("active", sec.id === "section-" + target);
-        });
-
-        buttons.forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-      });
-    });
-  </script>
+  <script src="js/home.js" defer></script>
 
 </body>
 </html>

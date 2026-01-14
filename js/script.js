@@ -1,8 +1,17 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const BACKEND_URL = "https://gpt-backend-kodi.onrender.com/chat";
+function initLegacyChatPage() {
+  if (!window.CONFIG || !window.API) {
+    alert("Erreur: config.js ou api.js n'est pas chargé. Vérifie l'ordre des <script>.");
+    return;
+  }
 
-  const BG_WELCOME = "assets/image extérieur.png";
-  const BG_CHAT = "assets/image intérieur.png";
+  const C = window.CONFIG;
+  const api = window.API;
+  const session = window.SESSION;
+
+  const BACKEND_URL = C.API_ENDPOINTS.CHAT;
+
+  const BG_WELCOME = C.ASSETS.BG_WELCOME;
+  const BG_CHAT = C.ASSETS.BG_CHAT;
 
   const welcomeScreen = document.getElementById("welcome-screen");
   const chatScreen = document.getElementById("chat-screen");
@@ -23,7 +32,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const appBg = document.getElementById("app-bg");
 
-  const PARTICIPANT_KEY = "pv_participant_id";
+  const PARTICIPANT_KEY = C.STORAGE_KEYS.PARTICIPANT_ID;
+  const HISTORY_PREFIX = C.STORAGE_KEYS.CHAT_HISTORY_PREFIX_LEGACY;
 
   function setStatus(text) {
     if (statusPill) statusPill.textContent = text;
@@ -48,7 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function historyKeyFor(participantId) {
-    return `pv_chat_history_${participantId}`;
+    return `${HISTORY_PREFIX}${participantId}`;
   }
 
   function showWelcome(errorText = "") {
@@ -109,17 +119,12 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function sendToBackend(message, participantId) {
-    const res = await fetch(BACKEND_URL, {
+    const token = session?.getToken?.();
+    return api.httpJson(BACKEND_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message, userId: participantId })
+      token,
+      body: { message, userId: participantId },
     });
-
-    if (!res.ok) {
-      const txt = await res.text().catch(() => "");
-      throw new Error(`HTTP ${res.status} ${res.statusText} ${txt}`);
-    }
-    return res.json();
   }
 
   let participantId = null;
@@ -249,4 +254,6 @@ document.addEventListener("DOMContentLoaded", () => {
     },
     { passive: true }
   );
-});
+}
+
+document.addEventListener("DOMContentLoaded", initLegacyChatPage);
