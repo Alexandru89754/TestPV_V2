@@ -1,4 +1,5 @@
 export const API_BASE_URL = "https://patient-virtuel-platform-backend.onrender.com";
+export const DEBUG = true;
 
 const apiUrl = (path) => `${API_BASE_URL}${path}`;
 

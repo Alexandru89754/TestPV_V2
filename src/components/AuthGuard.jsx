@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ROUTES } from "../lib/config";
+import { DEBUG, ROUTES } from "../lib/config";
 import { getToken } from "../lib/session";
 
 export default function AuthGuard({ children }) {
@@ -9,6 +9,9 @@ export default function AuthGuard({ children }) {
 
   useEffect(() => {
     const nextToken = getToken();
+    if (DEBUG) {
+      console.log("[DEBUG] token present:", Boolean(nextToken));
+    }
     if (!nextToken) {
       navigate(ROUTES.LOGIN_PAGE, { replace: true });
       return;

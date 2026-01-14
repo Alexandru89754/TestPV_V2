@@ -1,3 +1,5 @@
+import { DEBUG } from "./config";
+
 function parseBody(text) {
   if (!text) return null;
   try {
@@ -40,6 +42,15 @@ export async function httpJson(url, options = {}) {
     const err = new Error(extractErrorMessage(data, res.status));
     err.status = res.status;
     err.data = data;
+    if (DEBUG) {
+      console.error("[DEBUG] httpJson error", {
+        url,
+        method,
+        status: res.status,
+        message: err.message,
+        data,
+      });
+    }
     throw err;
   }
 
@@ -64,6 +75,15 @@ export async function httpForm(url, options = {}) {
     const err = new Error(extractErrorMessage(data, res.status));
     err.status = res.status;
     err.data = data;
+    if (DEBUG) {
+      console.error("[DEBUG] httpForm error", {
+        url,
+        method,
+        status: res.status,
+        message: err.message,
+        data,
+      });
+    }
     throw err;
   }
 
