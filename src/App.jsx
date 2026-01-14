@@ -40,5 +40,6 @@ export default function App() {
         <Route path="*" element={<Navigate to={ROUTES.LOGIN_PAGE} replace />} />
       </Routes>
     </HashRouter>
-  );
+   );
 }
+export default App;
