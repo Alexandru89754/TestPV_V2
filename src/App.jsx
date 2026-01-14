@@ -1,4 +1,4 @@
-import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { HashRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import LoginPage from "./pages/LoginPage.jsx";
 import HomePage from "./pages/HomePage.jsx";
 import AuthGuard from "./components/AuthGuard.jsx";
@@ -16,7 +16,7 @@ function DebugRouteLogger() {
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <DebugRouteLogger />
       <Routes>
         <Route path="/" element={<Navigate to={ROUTES.LOGIN_PAGE} replace />} />
@@ -39,6 +39,6 @@ export default function App() {
         />
         <Route path="*" element={<Navigate to={ROUTES.LOGIN_PAGE} replace />} />
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
