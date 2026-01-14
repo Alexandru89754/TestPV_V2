@@ -1,60 +1,13 @@
 <!DOCTYPE html>
 <html lang="fr">
-<head>
-  <meta charset="UTF-8" />
-  <title>Patient virtuel · Accueil</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-
-  <!-- BACKGROUND -->
-  <div class="login-bg"></div>
-  <div class="login-overlay" style="pointer-events:none;"></div>
-
-  <div class="login-wrapper">
-    <div class="login-card">
-
-      <h1 class="login-title">Patient virtuel</h1>
-      <p class="login-subtitle">
-        Crée un compte ou connecte-toi pour continuer
-      </p>
-
-      <!-- TABS -->
-      <div class="login-tabs">
-        <button class="tab active" id="tab-login" type="button">Connexion</button>
-        <button class="tab" id="tab-register" type="button">Créer un compte</button>
-      </div>
-
-      <!-- FORM -->
-      <form class="login-form" action="javascript:void(0);">
-
-        <label>Email</label>
-        <input id="email" type="email" required />
-
-        <label>Mot de passe</label>
-        <input id="password" type="password" required />
-
-        <div id="confirm-wrap" style="display:none;">
-          <label>Confirmer le mot de passe</label>
-          <input id="password2" type="password" />
-        </div>
-
-        <button class="login-btn" id="submit" type="button">
-          Se connecter
-        </button>
-
-        <p id="err" style="color:red;text-align:center;margin-top:10px;"></p>
-      </form>
-
-    </div>
-  </div>
-
-  <script src="js/config.js" defer></script>
-  <script src="js/api.js" defer></script>
-  <script src="js/session.js" defer></script>
-  <script src="js/auth.js" defer></script>
-
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Patient virtuel</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
 </html>
