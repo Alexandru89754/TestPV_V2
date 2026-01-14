@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { ROUTES } from "../lib/config";
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -16,7 +17,15 @@ export default function HomePage() {
   const handleSelect = (section) => {
     setActiveSection(section);
     setActiveNav(section);
-    navigate(`/home/${section}`);
+    navigate(`${ROUTES.HOME_PAGE}/${section}`);
+  };
+
+  const handleLaunchApp = () => {
+    navigate(ROUTES.APP_PAGE);
+  };
+
+  const handleLaunchChat = () => {
+    navigate(ROUTES.CHAT_PAGE);
   };
 
   return (
@@ -69,6 +78,14 @@ export default function HomePage() {
             <p className="content-text">
               Sélectionnez une option dans le menu à gauche pour commencer.
             </p>
+            <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginTop: "16px" }}>
+              <button className="btn-primary" onClick={handleLaunchApp}>
+                Lancer le patient virtuel
+              </button>
+              <button className="btn-primary" onClick={handleLaunchChat}>
+                Ouvrir le chat classique
+              </button>
+            </div>
           </section>
 
           <section
@@ -116,7 +133,16 @@ export default function HomePage() {
             <h1>Outil AI – Patient virtuel</h1>
             <p className="content-text">Le chatbot est accessible ici.</p>
 
-            <button className="btn-primary">Lancer le patient virtuel</button>
+            <button className="btn-primary" onClick={handleLaunchApp}>
+              Lancer le patient virtuel
+            </button>
+            <button
+              className="btn-primary"
+              style={{ marginLeft: "12px" }}
+              onClick={handleLaunchChat}
+            >
+              Ouvrir le chat classique
+            </button>
           </section>
         </main>
       </div>
