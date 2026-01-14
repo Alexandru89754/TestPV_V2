@@ -24,6 +24,10 @@ export default function HomePage() {
     navigate(ROUTES.APP_PAGE);
   };
 
+  const handleLaunchChat = () => {
+    navigate(ROUTES.CHAT_PAGE);
+  };
+
   return (
     <>
       <div className="auth-bg"></div>
@@ -74,6 +78,14 @@ export default function HomePage() {
             <p className="content-text">
               Sélectionnez une option dans le menu à gauche pour commencer.
             </p>
+            <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginTop: "16px" }}>
+              <button className="btn-primary" onClick={handleLaunchApp}>
+                Lancer le patient virtuel
+              </button>
+              <button className="btn-primary" onClick={handleLaunchChat}>
+                Ouvrir le chat classique
+              </button>
+            </div>
           </section>
 
           <section
@@ -123,6 +135,13 @@ export default function HomePage() {
 
             <button className="btn-primary" onClick={handleLaunchApp}>
               Lancer le patient virtuel
+            </button>
+            <button
+              className="btn-primary"
+              style={{ marginLeft: "12px" }}
+              onClick={handleLaunchChat}
+            >
+              Ouvrir le chat classique
             </button>
           </section>
         </main>
