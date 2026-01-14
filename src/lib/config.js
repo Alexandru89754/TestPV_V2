@@ -6,6 +6,8 @@ const apiUrl = (path) => `${API_BASE_URL}${path}`;
 export const ROUTES = {
   LOGIN_PAGE: "/login",
   HOME_PAGE: "/home",
+  APP_PAGE: "/app",
+  CHAT_PAGE: "/chat",
 };
 
 export const STORAGE_KEYS = {
