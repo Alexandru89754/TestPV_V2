@@ -3,10 +3,10 @@ import { ASSETS, ROUTES } from "../lib/config";
 import { logout } from "../lib/session";
 
 const navItems = [
-  { to: "patient-virtuel", label: "Patient virtuel" },
-  { to: "forum", label: "Forum" },
-  { to: "profile", label: "Mon profil" },
-  { to: "friends", label: "Amis" },
+  { to: `${ROUTES.APP_PAGE}/patient-virtuel`, label: "Patient virtuel" },
+  { to: `${ROUTES.APP_PAGE}/forum`, label: "Forum" },
+  { to: `${ROUTES.APP_PAGE}/profile`, label: "Mon profil" },
+  { to: `${ROUTES.APP_PAGE}/friends`, label: "Amis" },
 ];
 
 export default function AppShell() {
