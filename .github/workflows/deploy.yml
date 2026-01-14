@@ -43,7 +43,7 @@ jobs:
 
       - name: Validate build output
         run: |
-          if rg -n "src/main.jsx" dist/index.html; then
+          if grep -n "src/main.jsx" dist/index.html; then
             echo "dist/index.html still references src/main.jsx"
             exit 1
           fi
@@ -51,11 +51,11 @@ jobs:
             echo "dist/assets is missing or empty"
             exit 1
           fi
-          if rg -n "(src|href)=\"/(assets|src)" dist/index.html; then
+          if grep -nE '(src|href)="/(assets|src)' dist/index.html; then
             echo "dist/index.html has absolute asset paths without base"
             exit 1
           fi
-          if ! rg -n "chatbot" dist/assets; then
+          if ! grep -R -n "chatbot" dist/assets; then
             echo "Chatbot route string missing from bundle output"
             exit 1
           fi
