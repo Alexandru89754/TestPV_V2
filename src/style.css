@@ -14,7 +14,7 @@
 .login-bg {
   position: fixed;
   inset: 0;
-  background: var(--login-bg, url("./asset/image_out.png")) center / cover no-repeat;
+  background: var(--login-bg, url("./assets/image_out.png")) center / cover no-repeat;
   z-index: -2;
 }
 
