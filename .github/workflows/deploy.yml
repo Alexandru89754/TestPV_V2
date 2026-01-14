@@ -55,6 +55,10 @@ jobs:
             echo "dist/index.html has absolute asset paths without base"
             exit 1
           fi
+          if ! rg -n "chatbot" dist/assets; then
+            echo "Chatbot route string missing from bundle output"
+            exit 1
+          fi
 
       - name: Preview smoke test
         run: |

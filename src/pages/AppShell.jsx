@@ -12,7 +12,11 @@ export default function AppShell() {
   const navigate = useNavigate();
 
   return (
-    <div className="app-shell">
+    <div
+      className="app-shell"
+      style={{ "--app-shell-bg": `url("${ASSETS.BG_CHAT}")` }}
+    >
+      <div className="app-shell-overlay" aria-hidden="true"></div>
       <aside className="app-sidebar">
         <div className="app-brand">
           <span className="brand-dot"></span>

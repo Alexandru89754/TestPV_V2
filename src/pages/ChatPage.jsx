@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { API_ENDPOINTS, ASSETS, ROUTES, STORAGE_KEYS } from "../lib/config";
 import { httpForm, httpJson } from "../lib/api";
 import { getParticipantId, getUserEmail, setParticipantId as setParticipantStorage } from "../lib/session";
@@ -8,11 +8,13 @@ const typingText = "…";
 
 export default function ChatPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const messagesRef = useRef(null);
   const inputRef = useRef(null);
   const streamRef = useRef(null);
   const recorderRef = useRef(null);
   const chunksRef = useRef([]);
+  const isStandalone = location.pathname === ROUTES.CHAT_PAGE;
 
   const [participantId, setParticipantId] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -38,6 +40,15 @@ export default function ChatPage() {
     setParticipantStorage(nextId);
     setParticipantId(nextId);
   }, [navigate]);
+
+  useEffect(() => {
+    if (!isStandalone) return;
+    document.body.classList.add("chat-standalone");
+    document.documentElement.style.setProperty("--chat-bg", `url("${ASSETS.BG_CHAT}")`);
+    return () => {
+      document.body.classList.remove("chat-standalone");
+    };
+  }, [isStandalone]);
 
   useEffect(() => {
     if (!historyKey || !participantId) return;
@@ -231,10 +242,9 @@ export default function ChatPage() {
 
   return (
     <>
-      <div className="app-bg" id="app-bg" style={{ backgroundImage: `url("${ASSETS.BG_CHAT}")` }}></div>
-
-      <div className="app-shell">
-        <div className="app-card">
+      <div className="chat-page">
+        {isStandalone ? <div className="chat-standalone-overlay" aria-hidden="true"></div> : null}
+        <div className="chat-card">
           <section className="chat" id="chat-screen">
             <header className="chat-header">
               <div className="chat-header__left">
