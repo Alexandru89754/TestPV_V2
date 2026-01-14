@@ -1,6 +1,8 @@
 import { HashRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import LoginPage from "./pages/LoginPage.jsx";
 import HomePage from "./pages/HomePage.jsx";
+import AppPage from "./pages/AppPage.jsx";
+import ChatPage from "./pages/ChatPage.jsx";
 import AuthGuard from "./components/AuthGuard.jsx";
 import { DEBUG, ROUTES } from "./lib/config.js";
 
@@ -37,9 +39,24 @@ export default function App() {
             </AuthGuard>
           }
         />
+        <Route
+          path={ROUTES.APP_PAGE}
+          element={
+            <AuthGuard>
+              <AppPage />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path={ROUTES.CHAT_PAGE}
+          element={
+            <AuthGuard>
+              <ChatPage />
+            </AuthGuard>
+          }
+        />
         <Route path="*" element={<Navigate to={ROUTES.LOGIN_PAGE} replace />} />
       </Routes>
     </HashRouter>
-   );
+  );
 }
-export default App;
