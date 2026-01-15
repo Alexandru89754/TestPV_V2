@@ -31,6 +31,7 @@ export const STORAGE_KEYS = {
   CHAT_HISTORY_PREFIX_APP: "pv_chat_",
   CHAT_HISTORY_PREFIX_LEGACY: "pv_chat_history_",
   CHAT_SESSION_PREFIX: "pv_chat_session_",
+  CHAT_ANXIETY_PREFIX: "pv_chat_anxiety_",
 };
 
 export const API_ENDPOINTS = {
