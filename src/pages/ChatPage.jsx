@@ -8,6 +8,7 @@ import TypingIndicator from "../components/TypingIndicator";
 const TYPING_INTERVAL = 32;
 const TYPING_CHUNK_SIZE = 2;
 const SCROLL_THRESHOLD = 24;
+const ANXIETY_QUESTION = "Quel est ton niveau d’anxiété sur 10 ?";
 const buildSessionId = () => {
   if (typeof crypto !== "undefined" && crypto.randomUUID) {
     return crypto.randomUUID();
@@ -27,6 +28,7 @@ export default function ChatPage() {
   const typingMessageIdRef = useRef(null);
   const typingFullTextRef = useRef("");
   const userAtBottomRef = useRef(true);
+  const hasSentAnxietyRef = useRef(false);
   const isStandalone = location.pathname === ROUTES.CHAT_PAGE;
 
   const [participantId, setParticipantId] = useState(null);
@@ -41,6 +43,10 @@ export default function ChatPage() {
   const [ending, setEnding] = useState(false);
   const [endError, setEndError] = useState("");
   const [endNotice, setEndNotice] = useState("");
+  const [anxietyStep, setAnxietyStep] = useState("intro");
+  const [anxietyInput, setAnxietyInput] = useState("");
+  const [anxietyValue, setAnxietyValue] = useState(null);
+  const [anxietyError, setAnxietyError] = useState("");
 
   const userEmail = getUserEmail();
 
@@ -60,6 +66,11 @@ export default function ChatPage() {
   const sessionKey = useMemo(() => {
     if (!participantId) return null;
     return `${STORAGE_KEYS.CHAT_SESSION_PREFIX}${participantId}`;
+  }, [participantId]);
+
+  const anxietyKey = useMemo(() => {
+    if (!participantId) return null;
+    return `${STORAGE_KEYS.CHAT_ANXIETY_PREFIX}${participantId}`;
   }, [participantId]);
 
   useEffect(() => {
@@ -110,6 +121,18 @@ export default function ChatPage() {
 
     setMessages(next);
   }, [historyKey, participantId]);
+
+  useEffect(() => {
+    if (!anxietyKey) return;
+    const stored = localStorage.getItem(anxietyKey);
+    const parsed = stored === null ? null : Number(stored);
+    if (Number.isInteger(parsed) && parsed >= 0 && parsed <= 10) {
+      setAnxietyValue(parsed);
+      setAnxietyStep("chat");
+      return;
+    }
+    setAnxietyStep("intro");
+  }, [anxietyKey]);
 
   useEffect(() => {
     if (!sessionKey) return;
@@ -221,10 +244,20 @@ export default function ChatPage() {
 
     addMessage("user", text);
 
+    const isFirstUserMessage = !messages.some((message) => message.role === "user");
+    const shouldSendAnxiety = isFirstUserMessage && !hasSentAnxietyRef.current && anxietyValue !== null;
+    if (shouldSendAnxiety) {
+      hasSentAnxietyRef.current = true;
+    }
+
     try {
       const data = await httpJson(API_ENDPOINTS.CHAT, {
         method: "POST",
-        body: { message: text, userId: participantId },
+        body: {
+          message: text,
+          userId: participantId,
+          ...(shouldSendAnxiety ? { anxiety_level: anxietyValue } : {}),
+        },
       });
       setIsThinking(false);
       startTyping(data.reply || "Erreur: réponse vide.");
@@ -318,6 +351,7 @@ export default function ChatPage() {
         localStorage.setItem(sessionKey, freshSession);
       }
       setMessages(buildInitialMessages());
+      hasSentAnxietyRef.current = false;
       setStatus("Prêt");
       setEndNotice("Discussion sauvegardée et réinitialisée.");
     } catch (err) {
@@ -343,6 +377,9 @@ export default function ChatPage() {
 
   const handleChangeId = () => {
     localStorage.removeItem(STORAGE_KEYS.PARTICIPANT_ID);
+    if (anxietyKey) {
+      localStorage.removeItem(anxietyKey);
+    }
     navigate(ROUTES.LOGIN_PAGE, { replace: true });
   };
 
@@ -443,6 +480,76 @@ export default function ChatPage() {
       stopTracks();
     }
   };
+
+  const parseAnxietyValue = (value) => {
+    if (value === "" || value === null || value === undefined) return null;
+    const parsed = Number(value);
+    if (!Number.isInteger(parsed)) return null;
+    if (parsed < 0 || parsed > 10) return null;
+    return parsed;
+  };
+
+  const handleStart = () => {
+    setAnxietyError("");
+    setAnxietyStep("question");
+  };
+
+  const handleAnxietySubmit = (event) => {
+    event.preventDefault();
+    const parsed = parseAnxietyValue(anxietyInput);
+    if (parsed === null) {
+      setAnxietyError("Veuillez entrer un nombre entier entre 0 et 10.");
+      return;
+    }
+    setAnxietyError("");
+    setAnxietyValue(parsed);
+    if (anxietyKey) {
+      localStorage.setItem(anxietyKey, String(parsed));
+    }
+    setAnxietyStep("chat");
+  };
+
+  if (anxietyStep !== "chat") {
+    return (
+      <div className="chat-page">
+        {isStandalone ? <div className="chat-standalone-overlay" aria-hidden="true"></div> : null}
+        <div className="chat-card">
+          <section className="chat" id="chat-screen" style={{ textAlign: "center" }}>
+            <h1 style={{ marginBottom: "16px" }}>Démarrer</h1>
+            {anxietyStep === "intro" ? (
+              <button className="btn btn-primary" type="button" onClick={handleStart}>
+                Démarrer
+              </button>
+            ) : (
+              <form onSubmit={handleAnxietySubmit}>
+                <p style={{ marginBottom: "12px" }}>{ANXIETY_QUESTION}</p>
+                <input
+                  type="number"
+                  min="0"
+                  max="10"
+                  step="1"
+                  required
+                  className="chat-input"
+                  value={anxietyInput}
+                  onChange={(event) => {
+                    setAnxietyInput(event.target.value);
+                    if (anxietyError) setAnxietyError("");
+                  }}
+                  style={{ maxWidth: "160px", margin: "0 auto 12px" }}
+                />
+                <div style={{ display: "flex", justifyContent: "center", gap: "12px" }}>
+                  <button className="btn btn-primary" type="submit">
+                    Continuer
+                  </button>
+                </div>
+                {anxietyError ? <p className="status-text error">{anxietyError}</p> : null}
+              </form>
+            )}
+          </section>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
