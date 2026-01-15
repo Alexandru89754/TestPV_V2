@@ -3,8 +3,11 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { API_ENDPOINTS, ASSETS, BACKEND_URL, DEBUG, ROUTES, STORAGE_KEYS } from "../lib/config";
 import { httpForm, httpJson } from "../lib/api";
 import { getParticipantId, getUserEmail, setParticipantId as setParticipantStorage } from "../lib/session";
+import TypingIndicator from "../components/TypingIndicator";
 
-const typingText = "…";
+const TYPING_INTERVAL = 32;
+const TYPING_CHUNK_SIZE = 2;
+const SCROLL_THRESHOLD = 24;
 const buildSessionId = () => {
   if (typeof crypto !== "undefined" && crypto.randomUUID) {
     return crypto.randomUUID();
@@ -20,6 +23,10 @@ export default function ChatPage() {
   const streamRef = useRef(null);
   const recorderRef = useRef(null);
   const chunksRef = useRef([]);
+  const typingIntervalRef = useRef(null);
+  const typingMessageIdRef = useRef(null);
+  const typingFullTextRef = useRef("");
+  const userAtBottomRef = useRef(true);
   const isStandalone = location.pathname === ROUTES.CHAT_PAGE;
 
   const [participantId, setParticipantId] = useState(null);
@@ -28,6 +35,8 @@ export default function ChatPage() {
   const [status, setStatus] = useState("Prêt");
   const [inputValue, setInputValue] = useState("");
   const [sending, setSending] = useState(false);
+  const [isThinking, setIsThinking] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
   const [cameraActive, setCameraActive] = useState(false);
   const [ending, setEnding] = useState(false);
   const [endError, setEndError] = useState("");
@@ -69,9 +78,23 @@ export default function ChatPage() {
   useEffect(() => {
     if (!isStandalone) return;
     document.body.classList.add("chat-standalone");
-    document.documentElement.style.setProperty("--chat-bg", `url("${ASSETS.BG_WELCOME}")`);
+    document.body.classList.add("bg-app");
+    document.body.classList.remove("bg-auth");
+    document.documentElement.style.setProperty("--chat-bg", `url("${ASSETS.BG_CHAT}")`);
+    document.documentElement.style.setProperty("--app-bg", `url("${ASSETS.BG_CHAT}")`);
     return () => {
       document.body.classList.remove("chat-standalone");
+      document.body.classList.remove("bg-app");
+    };
+  }, [isStandalone]);
+
+  useEffect(() => {
+    if (isStandalone) return;
+    document.body.classList.add("bg-app");
+    document.body.classList.remove("bg-auth");
+    document.documentElement.style.setProperty("--app-bg", `url("${ASSETS.BG_CHAT}")`);
+    return () => {
+      document.body.classList.remove("bg-app");
     };
   }, [isStandalone]);
 
@@ -107,8 +130,18 @@ export default function ChatPage() {
 
   useEffect(() => {
     if (!messagesRef.current) return;
-    messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
+    if (userAtBottomRef.current) {
+      messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
+    }
   }, [messages]);
+
+  useEffect(() => {
+    return () => {
+      if (typingIntervalRef.current) {
+        clearInterval(typingIntervalRef.current);
+      }
+    };
+  }, []);
 
   const addMessage = (role, text) => {
     setMessages((prev) => [
@@ -123,6 +156,56 @@ export default function ChatPage() {
     );
   };
 
+  const finalizeTyping = () => {
+    if (!typingMessageIdRef.current) return;
+    const finalText = typingFullTextRef.current;
+    updateMessage(typingMessageIdRef.current, finalText);
+    typingMessageIdRef.current = null;
+    typingFullTextRef.current = "";
+    setIsTyping(false);
+    if (typingIntervalRef.current) {
+      clearInterval(typingIntervalRef.current);
+      typingIntervalRef.current = null;
+    }
+  };
+
+  const startTyping = (text) => {
+    const fullText = String(text ?? "");
+    const typingId = new Date().toISOString();
+    typingMessageIdRef.current = typingId;
+    typingFullTextRef.current = fullText;
+    setIsTyping(true);
+    setMessages((prev) => [...prev, { role: "bot", text: "", ts: typingId }]);
+    if (typingIntervalRef.current) {
+      clearInterval(typingIntervalRef.current);
+    }
+    let index = 0;
+    const step = () => {
+      index = Math.min(fullText.length, index + TYPING_CHUNK_SIZE);
+      updateMessage(typingId, fullText.slice(0, index));
+      if (messagesRef.current && userAtBottomRef.current) {
+        messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
+      }
+      if (index >= fullText.length) {
+        if (typingIntervalRef.current) {
+          clearInterval(typingIntervalRef.current);
+          typingIntervalRef.current = null;
+        }
+        typingMessageIdRef.current = null;
+        typingFullTextRef.current = "";
+        setIsTyping(false);
+      }
+    };
+    step();
+    typingIntervalRef.current = setInterval(step, TYPING_INTERVAL);
+  };
+
+  const handleScroll = () => {
+    if (!messagesRef.current) return;
+    const { scrollTop, scrollHeight, clientHeight } = messagesRef.current;
+    userAtBottomRef.current = scrollHeight - scrollTop - clientHeight <= SCROLL_THRESHOLD;
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (!participantId) return;
@@ -130,25 +213,25 @@ export default function ChatPage() {
     const text = inputValue.trim();
     if (!text) return;
 
+    finalizeTyping();
     setSending(true);
     setStatus("Envoi…");
+    setIsThinking(true);
     setInputValue("");
 
     addMessage("user", text);
-
-    const typingId = new Date().toISOString();
-    setMessages((prev) => [...prev, { role: "bot", text: typingText, ts: typingId }]);
 
     try {
       const data = await httpJson(API_ENDPOINTS.CHAT, {
         method: "POST",
         body: { message: text, userId: participantId },
       });
-
-      updateMessage(typingId, data.reply || "Erreur: réponse vide.");
+      setIsThinking(false);
+      startTyping(data.reply || "Erreur: réponse vide.");
       setStatus("Prêt");
     } catch (err) {
-      updateMessage(typingId, "Erreur: serveur inaccessible.");
+      setIsThinking(false);
+      startTyping("Erreur: serveur inaccessible.");
       addMessage("system", String(err));
       setStatus("Erreur");
     } finally {
@@ -161,7 +244,7 @@ export default function ChatPage() {
 
   const buildChatLogs = (items) =>
     items
-      .filter((message) => message.text && message.text !== typingText)
+      .filter((message) => message.text)
       .map((message) => ({
         user_email: userEmail,
         session_id: sessionId,
@@ -246,6 +329,8 @@ export default function ChatPage() {
   };
 
   const handleClear = () => {
+    finalizeTyping();
+    setIsThinking(false);
     setMessages([
       {
         role: "bot",
@@ -394,7 +479,13 @@ export default function ChatPage() {
               </div>
             </header>
 
-            <main className="chat-messages" id="chat-messages" aria-live="polite" ref={messagesRef}>
+            <main
+              className="chat-messages"
+              id="chat-messages"
+              aria-live="polite"
+              ref={messagesRef}
+              onScroll={handleScroll}
+            >
               {messages.map((message, index) => (
                 <div
                   key={`${message.ts}-${index}`}
@@ -409,6 +500,11 @@ export default function ChatPage() {
                   {message.text}
                 </div>
               ))}
+              {isThinking && !isTyping ? (
+                <div className="message bot-message typing-message">
+                  <TypingIndicator />
+                </div>
+              ) : null}
             </main>
 
             <form className="chat-input-area" id="chat-form" action="javascript:void(0);" onSubmit={handleSubmit}>

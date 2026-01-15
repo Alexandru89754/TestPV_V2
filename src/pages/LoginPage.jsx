@@ -15,7 +15,13 @@ export default function LoginPage() {
 
   useEffect(() => {
     clearSession();
+    document.body.classList.add("bg-auth");
+    document.body.classList.remove("bg-app");
+    document.documentElement.style.setProperty("--auth-bg", `url("${ASSETS.BG_WELCOME}")`);
     document.documentElement.style.setProperty("--login-bg", `url("${ASSETS.BG_WELCOME}")`);
+    return () => {
+      document.body.classList.remove("bg-auth");
+    };
   }, []);
 
   const isLogin = mode === "login";

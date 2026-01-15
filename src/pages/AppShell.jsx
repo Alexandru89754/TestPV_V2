@@ -1,4 +1,5 @@
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 import { ASSETS, ROUTES } from "../lib/config";
 import { logout } from "../lib/session";
 
@@ -13,10 +14,19 @@ export default function AppShell() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  useEffect(() => {
+    document.body.classList.add("bg-app");
+    document.body.classList.remove("bg-auth");
+    document.documentElement.style.setProperty("--app-bg", `url("${ASSETS.BG_CHAT}")`);
+    return () => {
+      document.body.classList.remove("bg-app");
+    };
+  }, []);
+
   return (
     <div
       className="app-shell"
-      style={{ "--app-shell-bg": `url("${ASSETS.BG_WELCOME}")` }}
+      style={{ "--app-shell-bg": `url("${ASSETS.BG_CHAT}")` }}
     >
       <div className="app-shell-overlay" aria-hidden="true"></div>
       <aside className="app-sidebar">
