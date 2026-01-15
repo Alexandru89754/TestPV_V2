@@ -73,7 +73,13 @@ export default function HomePage() {
   }, [navigate, section]);
 
   useEffect(() => {
-    document.documentElement.style.setProperty("--dashboard-bg", `url("${ASSETS.BG_WELCOME}")`);
+    document.body.classList.add("bg-app");
+    document.body.classList.remove("bg-auth");
+    document.documentElement.style.setProperty("--dashboard-bg", `url("${ASSETS.BG_CHAT}")`);
+    document.documentElement.style.setProperty("--app-bg", `url("${ASSETS.BG_CHAT}")`);
+    return () => {
+      document.body.classList.remove("bg-app");
+    };
   }, []);
 
   const handleSelect = (nextSection) => {
