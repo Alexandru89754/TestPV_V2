@@ -7,6 +7,49 @@ const TABS = [
   { id: "activities", label: "Activities" },
 ];
 
+const resolveAuthor = (entry) => {
+  const username =
+    entry?.author_username ||
+    entry?.username ||
+    entry?.user?.username ||
+    entry?.user?.name ||
+    "Utilisateur";
+  const avatarUrl =
+    entry?.author_avatar_url ||
+    entry?.avatar_url ||
+    entry?.avatarUrl ||
+    entry?.user?.avatar_url ||
+    entry?.user?.avatarUrl ||
+    "";
+  return { username, avatarUrl };
+};
+
+const getInitial = (name) => {
+  if (!name) return "?";
+  const trimmed = name.trim();
+  return trimmed ? trimmed[0].toUpperCase() : "?";
+};
+
+function CommentRow({ comment }) {
+  const author = resolveAuthor(comment);
+  return (
+    <div className="comment-row">
+      <div className="avatar-circle small">
+        {author.avatarUrl ? (
+          <img src={author.avatarUrl} alt={author.username} />
+        ) : (
+          <span className="avatar-fallback">{getInitial(author.username)}</span>
+        )}
+      </div>
+      <div>
+        <p className="forum-username">{author.username || "Utilisateur"}</p>
+        <p className="forum-meta">{formatTime(comment.created_at)}</p>
+        <p>{comment.body}</p>
+      </div>
+    </div>
+  );
+}
+
 function formatTime(value) {
   if (!value) return "à l’instant";
   const date = new Date(value);
@@ -124,18 +167,27 @@ export default function ForumPage() {
           <div className="forum-feed">
             {posts.map((post) => (
               <article key={post.id} className="forum-card">
-                <div className="forum-card-header">
-                  <div className="avatar-circle">
-                    {post.user?.avatarUrl ? (
-                      <img src={post.user.avatarUrl} alt={post.user.username} />
-                    ) : null}
-                  </div>
-                  <div>
-                    <p className="forum-username">{post.user?.username || "Utilisateur"}</p>
-                    <p className="forum-meta">{formatTime(post.created_at)}</p>
-                  </div>
-                </div>
-                <p className="forum-body">{post.body || post.content}</p>
+                {(() => {
+                  const author = resolveAuthor(post);
+                  return (
+                    <>
+                      <div className="forum-card-header">
+                        <div className="avatar-circle">
+                          {author.avatarUrl ? (
+                            <img src={author.avatarUrl} alt={author.username} />
+                          ) : (
+                            <span className="avatar-fallback">{getInitial(author.username)}</span>
+                          )}
+                        </div>
+                        <div>
+                          <p className="forum-username">{author.username || "Utilisateur"}</p>
+                          <p className="forum-meta">{formatTime(post.created_at)}</p>
+                        </div>
+                      </div>
+                      <p className="forum-body">{post.body || post.content}</p>
+                    </>
+                  );
+                })()}
                 <div className="forum-actions">
                   <button className="ghost-btn">❤️ {post.likes_count || 0}</button>
                   <button className="ghost-btn" onClick={() => handleToggleComments(post.id)}>
@@ -146,20 +198,7 @@ export default function ForumPage() {
                 {activePostId === post.id && (
                   <div className="comments-section">
                     {(commentsByPost[post.id] || []).map((comment) => (
-                      <div key={comment.id} className="comment-row">
-                        <div className="avatar-circle small">
-                          {comment.user?.avatarUrl ? (
-                            <img src={comment.user.avatarUrl} alt={comment.user.username} />
-                          ) : null}
-                        </div>
-                        <div>
-                          <p className="forum-username">
-                            {comment.user?.username || "Utilisateur"}
-                          </p>
-                          <p className="forum-meta">{formatTime(comment.created_at)}</p>
-                          <p>{comment.body}</p>
-                        </div>
-                      </div>
+                      <CommentRow key={comment.id} comment={comment} />
                     ))}
 
                     {currentUser && (

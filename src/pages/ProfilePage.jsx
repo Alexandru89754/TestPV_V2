@@ -11,6 +11,12 @@ import {
 const USERNAME_REGEX = /^[a-zA-Z0-9_]{3,20}$/;
 const MAX_AVATAR_SIZE = 5 * 1024 * 1024;
 
+const withCacheBust = (url) => {
+  if (!url) return "";
+  const separator = url.includes("?") ? "&" : "?";
+  return `${url}${separator}v=${Date.now()}`;
+};
+
 export default function ProfilePage() {
   const [profile, setProfile] = useState({ username: "", bio: "", avatarUrl: "" });
   const [draft, setDraft] = useState({ username: "", bio: "", avatarUrl: "" });
@@ -161,7 +167,10 @@ export default function ProfilePage() {
       const nextProfile = {
         username: updated?.username || draft.username,
         bio: updated?.bio || draft.bio,
-        avatarUrl: updated?.avatar_url || updated?.avatarUrl || avatarUrl,
+        avatarUrl:
+          avatarFile && avatarUrl
+            ? withCacheBust(updated?.avatar_url || updated?.avatarUrl || avatarUrl)
+            : updated?.avatar_url || updated?.avatarUrl || avatarUrl,
       };
       setProfile(nextProfile);
       setDraft(nextProfile);
