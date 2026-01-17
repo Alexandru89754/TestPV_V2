@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { DEBUG } from "../lib/config";
-import { getToken, getUserEmail } from "../lib/session";
+import { getToken } from "../lib/session";
 import {
   getMyProfile,
   updateMyProfile,
@@ -38,12 +38,11 @@ export default function ProfilePage() {
     const loadProfile = async () => {
       try {
         const token = getToken();
-        const userId = getUserEmail();
         if (!token) {
           setStatus({ state: "error", message: "Session expirée. Veuillez vous reconnecter." });
           return;
         }
-        const data = await getMyProfile({ token, userId });
+        const data = await getMyProfile({ token });
         const nextProfile = {
           username: data?.username || "",
           bio: data?.bio || "",
@@ -115,7 +114,6 @@ export default function ProfilePage() {
     setStatus({ state: "loading", message: "Enregistrement..." });
     try {
       const token = getToken();
-      const userId = getUserEmail();
       if (!token) {
         setStatus({ state: "error", message: "Session expirée. Veuillez vous reconnecter." });
         return;
@@ -132,7 +130,6 @@ export default function ProfilePage() {
           if ([404, 405, 415].includes(error?.status)) {
             const multipartResponse = await updateMyProfileMultipart({
               token,
-              userId,
               profile: { username: draft.username, bio: draft.bio },
               avatarFile,
             });
@@ -147,7 +144,6 @@ export default function ProfilePage() {
       if (!updated) {
         const response = await updateMyProfile({
           token,
-          userId,
           profile: {
             username: draft.username,
             bio: draft.bio,

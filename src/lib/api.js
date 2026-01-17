@@ -1,4 +1,4 @@
-import { DEBUG } from "./config";
+import { DEBUG, STORAGE_KEYS } from "./config";
 
 function parseBody(text) {
   if (!text) return null;
@@ -19,27 +19,56 @@ function extractErrorMessage(data, status) {
   return `HTTP ${status}`;
 }
 
-export async function httpJson(url, options = {}) {
+export async function authFetch(url, options = {}) {
   const { method = "GET", body, token, headers = {} } = options;
 
   const finalHeaders = { ...headers };
-  const init = { method, headers: finalHeaders };
+  let finalBody = body;
 
-  if (body !== undefined) {
+  const storedToken =
+    token ??
+    (typeof window !== "undefined" ? localStorage.getItem(STORAGE_KEYS.TOKEN) : null);
+
+  if (storedToken) {
+    finalHeaders.Authorization = `Bearer ${storedToken}`;
+  }
+
+  if (body !== undefined && !(body instanceof FormData)) {
     finalHeaders["Content-Type"] = finalHeaders["Content-Type"] || "application/json";
-    init.body = JSON.stringify(body);
+    if (typeof body !== "string") {
+      finalBody = JSON.stringify(body);
+    }
   }
 
-  if (token) {
-    finalHeaders.Authorization = `Bearer ${token}`;
+  const res = await fetch(url, { method, headers: finalHeaders, body: finalBody });
+
+  if (res.status === 401) {
+    const tokenValue = storedToken || "";
+    console.warn("[DEBUG] authFetch unauthorized", {
+      url,
+      method,
+      hasToken: Boolean(tokenValue),
+      tokenLength: tokenValue.length,
+    });
   }
 
-  const res = await fetch(url, init);
+  return res;
+}
+
+function extractUnauthorizedMessage(status, data) {
+  if (status === 401) {
+    return "Token invalide";
+  }
+  return extractErrorMessage(data, status);
+}
+
+export async function httpJson(url, options = {}) {
+  const res = await authFetch(url, options);
   const text = await res.text();
   const data = parseBody(text);
 
   if (!res.ok) {
-    const err = new Error(extractErrorMessage(data, res.status));
+    const err = new Error(extractUnauthorizedMessage(res.status, data));
     err.status = res.status;
     err.data = data;
     if (DEBUG) {
@@ -58,26 +87,12 @@ export async function httpJson(url, options = {}) {
 }
 
 export async function httpJsonWithStatus(url, options = {}) {
-  const { method = "GET", body, token, headers = {} } = options;
-
-  const finalHeaders = { ...headers };
-  const init = { method, headers: finalHeaders };
-
-  if (body !== undefined) {
-    finalHeaders["Content-Type"] = finalHeaders["Content-Type"] || "application/json";
-    init.body = JSON.stringify(body);
-  }
-
-  if (token) {
-    finalHeaders.Authorization = `Bearer ${token}`;
-  }
-
-  const res = await fetch(url, init);
+  const res = await authFetch(url, options);
   const text = await res.text();
   const data = parseBody(text);
 
   if (!res.ok) {
-    const err = new Error(extractErrorMessage(data, res.status));
+    const err = new Error(extractUnauthorizedMessage(res.status, data));
     err.status = res.status;
     err.data = data;
     if (DEBUG) {
@@ -96,21 +111,12 @@ export async function httpJsonWithStatus(url, options = {}) {
 }
 
 export async function httpForm(url, options = {}) {
-  const { method = "POST", body, token, headers = {} } = options;
-
-  const finalHeaders = { ...headers };
-  const init = { method, headers: finalHeaders, body };
-
-  if (token) {
-    finalHeaders.Authorization = `Bearer ${token}`;
-  }
-
-  const res = await fetch(url, init);
+  const res = await authFetch(url, options);
   const text = await res.text();
   const data = parseBody(text);
 
   if (!res.ok) {
-    const err = new Error(extractErrorMessage(data, res.status));
+    const err = new Error(extractUnauthorizedMessage(res.status, data));
     err.status = res.status;
     err.data = data;
     if (DEBUG) {
