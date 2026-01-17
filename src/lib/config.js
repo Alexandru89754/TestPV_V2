@@ -174,6 +174,13 @@ export const loadFirebaseConfig = async () => {
     return FIREBASE;
   }
 
+  const shouldFetch =
+    typeof window !== "undefined" && Boolean(window.CONFIG && window.CONFIG.FETCH_FIREBASE_CONFIG);
+
+  if (!shouldFetch) {
+    return FIREBASE;
+  }
+
   try {
     const response = await fetch(`${BACKEND_URL}/config/firebase`);
     if (!response.ok) {
