@@ -83,6 +83,123 @@ export const SUPABASE = {
   ANON_KEY: resolveSupabaseValue("SUPABASE_ANON_KEY"),
 };
 
+const applyFirebaseConfig = (values = {}) => {
+  const source = values.firebase || values.FIREBASE || values;
+
+  const mapping = {
+    API_KEY:
+      source.apiKey ||
+      source.api_key ||
+      source.firebase_api_key ||
+      source.FIREBASE_API_KEY ||
+      source.API_KEY,
+    AUTH_DOMAIN:
+      source.authDomain ||
+      source.auth_domain ||
+      source.firebase_auth_domain ||
+      source.FIREBASE_AUTH_DOMAIN ||
+      source.AUTH_DOMAIN,
+    PROJECT_ID:
+      source.projectId ||
+      source.project_id ||
+      source.firebase_project_id ||
+      source.FIREBASE_PROJECT_ID ||
+      source.PROJECT_ID,
+    STORAGE_BUCKET:
+      source.storageBucket ||
+      source.storage_bucket ||
+      source.firebase_storage_bucket ||
+      source.FIREBASE_STORAGE_BUCKET ||
+      source.STORAGE_BUCKET,
+    MESSAGING_SENDER_ID:
+      source.messagingSenderId ||
+      source.messaging_sender_id ||
+      source.firebase_messaging_sender_id ||
+      source.FIREBASE_MESSAGING_SENDER_ID ||
+      source.MESSAGING_SENDER_ID,
+    APP_ID:
+      source.appId ||
+      source.app_id ||
+      source.firebase_app_id ||
+      source.FIREBASE_APP_ID ||
+      source.APP_ID,
+    MEASUREMENT_ID:
+      source.measurementId ||
+      source.measurement_id ||
+      source.firebase_measurement_id ||
+      source.FIREBASE_MEASUREMENT_ID ||
+      source.MEASUREMENT_ID,
+  };
+
+  Object.entries(mapping).forEach(([key, value]) => {
+    if (!FIREBASE[key] && value) {
+      FIREBASE[key] = value;
+    }
+  });
+};
+
+const resolveFirebaseValue = (key) => {
+  if (typeof window !== "undefined" && window.CONFIG) {
+    const direct = window.CONFIG[`FIREBASE_${key}`];
+    if (direct) return direct;
+    if (window.CONFIG.FIREBASE && window.CONFIG.FIREBASE[key]) {
+      return window.CONFIG.FIREBASE[key];
+    }
+  }
+  return import.meta.env[`VITE_FIREBASE_${key}`] || "";
+};
+
+export const FIREBASE = {
+  API_KEY: resolveFirebaseValue("API_KEY"),
+  AUTH_DOMAIN: resolveFirebaseValue("AUTH_DOMAIN"),
+  PROJECT_ID: resolveFirebaseValue("PROJECT_ID"),
+  STORAGE_BUCKET: resolveFirebaseValue("STORAGE_BUCKET"),
+  MESSAGING_SENDER_ID: resolveFirebaseValue("MESSAGING_SENDER_ID"),
+  APP_ID: resolveFirebaseValue("APP_ID"),
+  MEASUREMENT_ID: resolveFirebaseValue("MEASUREMENT_ID"),
+};
+
+const isFirebaseConfigured = () =>
+  Boolean(
+    FIREBASE.API_KEY &&
+      FIREBASE.AUTH_DOMAIN &&
+      FIREBASE.PROJECT_ID &&
+      FIREBASE.STORAGE_BUCKET &&
+      FIREBASE.MESSAGING_SENDER_ID &&
+      FIREBASE.APP_ID
+  );
+
+export const loadFirebaseConfig = async () => {
+  if (isFirebaseConfigured()) {
+    return FIREBASE;
+  }
+
+  try {
+    const response = await fetch(`${BACKEND_URL}/config/firebase`);
+    if (!response.ok) {
+      return FIREBASE;
+    }
+    const data = await response.json();
+    applyFirebaseConfig(data);
+  } catch (error) {
+    return FIREBASE;
+  }
+
+  if (typeof window !== "undefined") {
+    window.CONFIG ??= {};
+    window.CONFIG.FIREBASE ??= {};
+    window.CONFIG.FIREBASE.API_KEY ??= FIREBASE.API_KEY;
+    window.CONFIG.FIREBASE.AUTH_DOMAIN ??= FIREBASE.AUTH_DOMAIN;
+    window.CONFIG.FIREBASE.PROJECT_ID ??= FIREBASE.PROJECT_ID;
+    window.CONFIG.FIREBASE.STORAGE_BUCKET ??= FIREBASE.STORAGE_BUCKET;
+    window.CONFIG.FIREBASE.MESSAGING_SENDER_ID ??= FIREBASE.MESSAGING_SENDER_ID;
+    window.CONFIG.FIREBASE.APP_ID ??= FIREBASE.APP_ID;
+    window.CONFIG.FIREBASE.MEASUREMENT_ID ??= FIREBASE.MEASUREMENT_ID;
+  }
+
+  return FIREBASE;
+};
+
 if (typeof window !== "undefined") {
   window.ASSETS ??= ASSETS;
   window.CONFIG ??= {};
@@ -92,5 +209,21 @@ if (typeof window !== "undefined") {
   window.CONFIG.SUPABASE ??= {
     URL: SUPABASE.URL,
     ANON_KEY: SUPABASE.ANON_KEY,
+  };
+  window.CONFIG.FIREBASE_API_KEY ??= FIREBASE.API_KEY;
+  window.CONFIG.FIREBASE_AUTH_DOMAIN ??= FIREBASE.AUTH_DOMAIN;
+  window.CONFIG.FIREBASE_PROJECT_ID ??= FIREBASE.PROJECT_ID;
+  window.CONFIG.FIREBASE_STORAGE_BUCKET ??= FIREBASE.STORAGE_BUCKET;
+  window.CONFIG.FIREBASE_MESSAGING_SENDER_ID ??= FIREBASE.MESSAGING_SENDER_ID;
+  window.CONFIG.FIREBASE_APP_ID ??= FIREBASE.APP_ID;
+  window.CONFIG.FIREBASE_MEASUREMENT_ID ??= FIREBASE.MEASUREMENT_ID;
+  window.CONFIG.FIREBASE ??= {
+    API_KEY: FIREBASE.API_KEY,
+    AUTH_DOMAIN: FIREBASE.AUTH_DOMAIN,
+    PROJECT_ID: FIREBASE.PROJECT_ID,
+    STORAGE_BUCKET: FIREBASE.STORAGE_BUCKET,
+    MESSAGING_SENDER_ID: FIREBASE.MESSAGING_SENDER_ID,
+    APP_ID: FIREBASE.APP_ID,
+    MEASUREMENT_ID: FIREBASE.MEASUREMENT_ID,
   };
 }
