@@ -29,6 +29,16 @@ export async function authFetch(url, options = {}) {
     token ??
     (typeof window !== "undefined" ? localStorage.getItem(STORAGE_KEYS.TOKEN) : null);
 
+  if (DEBUG) {
+    const tokenValue = storedToken || "";
+    console.info("[DEBUG] authFetch", {
+      url,
+      method,
+      hasToken: Boolean(tokenValue),
+      tokenLength: tokenValue.length,
+    });
+  }
+
   if (storedToken) {
     finalHeaders.Authorization = `Bearer ${storedToken}`;
   }
@@ -66,6 +76,7 @@ export async function httpJson(url, options = {}) {
   const res = await authFetch(url, options);
   const text = await res.text();
   const data = parseBody(text);
+  const requestMethod = options?.method ?? "GET";
 
   if (!res.ok) {
     const err = new Error(extractUnauthorizedMessage(res.status, data));
@@ -74,7 +85,7 @@ export async function httpJson(url, options = {}) {
     if (DEBUG) {
       console.error("[DEBUG] httpJson error", {
         url,
-        method,
+        method: requestMethod,
         status: res.status,
         message: err.message,
         data,
@@ -90,6 +101,7 @@ export async function httpJsonWithStatus(url, options = {}) {
   const res = await authFetch(url, options);
   const text = await res.text();
   const data = parseBody(text);
+  const requestMethod = options?.method ?? "GET";
 
   if (!res.ok) {
     const err = new Error(extractUnauthorizedMessage(res.status, data));
@@ -98,7 +110,7 @@ export async function httpJsonWithStatus(url, options = {}) {
     if (DEBUG) {
       console.error("[DEBUG] httpJsonWithStatus error", {
         url,
-        method,
+        method: requestMethod,
         status: res.status,
         message: err.message,
         data,
@@ -114,6 +126,7 @@ export async function httpForm(url, options = {}) {
   const res = await authFetch(url, options);
   const text = await res.text();
   const data = parseBody(text);
+  const requestMethod = options?.method ?? "GET";
 
   if (!res.ok) {
     const err = new Error(extractUnauthorizedMessage(res.status, data));
@@ -122,7 +135,7 @@ export async function httpForm(url, options = {}) {
     if (DEBUG) {
       console.error("[DEBUG] httpForm error", {
         url,
-        method,
+        method: requestMethod,
         status: res.status,
         message: err.message,
         data,
