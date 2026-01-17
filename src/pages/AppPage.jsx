@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { API_ENDPOINTS, ASSETS, ROUTES, STORAGE_KEYS } from "../lib/config";
+import { API_ENDPOINTS, ROUTES, STORAGE_KEYS } from "../lib/config";
 import { httpJson } from "../lib/api";
 import { getToken, getUserEmail, logout, requireAuth } from "../lib/session";
 import { useNavigate } from "react-router-dom";
@@ -46,7 +46,6 @@ export default function AppPage() {
 
     document.body.classList.add("bg-app");
     document.body.classList.remove("bg-auth");
-    document.documentElement.style.setProperty("--app-bg", `url("${ASSETS.BG_CHAT}")`);
     return () => {
       document.body.classList.remove("bg-app");
     };
@@ -256,8 +255,8 @@ export default function AppPage() {
         .overlay {
           position: fixed;
           inset: 0;
-          background: rgba(0, 0, 0, 0.45);
-          backdrop-filter: blur(10px);
+          background: rgba(248, 250, 252, 0.7);
+          backdrop-filter: blur(12px);
           z-index: 0;
         }
 
@@ -305,27 +304,28 @@ export default function AppPage() {
           font-size: 16px;
           font-weight: 600;
           border-radius: 999px;
-          border: none;
+          border: 1px solid var(--color-border);
           cursor: pointer;
-          background: rgba(255, 255, 255, 0.12);
-          color: #f5f5f5;
+          background: rgba(255, 255, 255, 0.7);
+          color: var(--color-text);
           transition: all 0.2s ease;
         }
 
         .nav-btn.active {
-          background: rgba(59, 130, 246, 0.9);
-          color: white;
-          box-shadow: 0 10px 24px rgba(59, 130, 246, 0.25);
+          background: rgba(14, 165, 233, 0.2);
+          color: var(--color-text);
+          border-color: rgba(14, 165, 233, 0.3);
+          box-shadow: 0 10px 24px rgba(14, 165, 233, 0.2);
         }
 
         .section {
           display: none;
-          background: rgba(20, 20, 24, 0.78);
+          background: var(--color-surface);
           border-radius: 28px;
           padding: 40px;
-          box-shadow: 0 30px 60px rgba(0,0,0,0.35);
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          backdrop-filter: blur(12px);
+          box-shadow: var(--shadow-md);
+          border: 1px solid var(--color-border);
+          backdrop-filter: var(--glass-blur);
           animation: fadeUp 0.35s ease;
         }
 
@@ -336,11 +336,11 @@ export default function AppPage() {
         .chat-box {
           height: 360px;
           overflow-y: auto;
-          border: 1px solid rgba(255, 255, 255, 0.08);
+          border: 1px solid var(--color-border);
           border-radius: 18px;
           padding: 20px;
           margin-bottom: 20px;
-          background: rgba(8, 8, 12, 0.75);
+          background: rgba(255, 255, 255, 0.7);
         }
 
         .bubble {
@@ -355,17 +355,17 @@ export default function AppPage() {
         }
 
         .bubble.user {
-          background: rgba(59, 130, 246, 0.95);
+          background: rgba(14, 165, 233, 0.95);
           color: white;
           margin-left: auto;
-          box-shadow: 0 12px 24px rgba(37, 99, 235, 0.25);
+          box-shadow: 0 12px 24px rgba(14, 165, 233, 0.25);
         }
 
         .bubble.bot {
-          background: rgba(255, 255, 255, 0.08);
-          color: #f1f5f9;
-          border: 1px solid rgba(255, 255, 255, 0.12);
-          backdrop-filter: blur(6px);
+          background: rgba(255, 255, 255, 0.85);
+          color: var(--color-text);
+          border: 1px solid var(--color-border);
+          backdrop-filter: var(--glass-blur);
         }
 
         .chat-controls {
@@ -378,15 +378,15 @@ export default function AppPage() {
           flex: 1;
           padding: 12px 16px;
           border-radius: 999px;
-          border: 1px solid rgba(255, 255, 255, 0.15);
-          background: rgba(10, 10, 12, 0.8);
-          color: #f8fafc;
+          border: 1px solid var(--color-border);
+          background: rgba(255, 255, 255, 0.85);
+          color: var(--color-text);
         }
 
         .chat-input:focus {
           outline: none;
-          border-color: rgba(59, 130, 246, 0.7);
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+          border-color: rgba(14, 165, 233, 0.6);
+          box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2);
         }
 
         .btn {
@@ -398,12 +398,19 @@ export default function AppPage() {
           transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
         }
 
-        .btn.primary { background: rgba(59, 130, 246, 0.95); color:white; }
-        .btn.ghost { background: rgba(255, 255, 255, 0.12); color: #f5f5f5; }
+        .btn.primary {
+          background: linear-gradient(135deg, var(--color-accent), var(--color-accent-strong));
+          color: #ffffff;
+        }
+        .btn.ghost {
+          background: transparent;
+          color: var(--color-text);
+          border: 1px solid var(--color-border);
+        }
         .btn.primary:hover,
         .btn.ghost:hover {
           transform: translateY(-1px);
-          box-shadow: 0 10px 22px rgba(0, 0, 0, 0.25);
+          box-shadow: 0 10px 22px rgba(15, 23, 42, 0.18);
         }
 
         .typing-message {
