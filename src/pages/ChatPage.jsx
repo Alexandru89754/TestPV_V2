@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { API_ENDPOINTS, ASSETS, BACKEND_URL, DEBUG, ROUTES, STORAGE_KEYS } from "../lib/config";
+import { API_ENDPOINTS, BACKEND_URL, DEBUG, ROUTES, STORAGE_KEYS } from "../lib/config";
 import { httpForm, httpJson } from "../lib/api";
 import { getParticipantId, getUserEmail, setParticipantId as setParticipantStorage } from "../lib/session";
 import TypingIndicator from "../components/TypingIndicator";
@@ -91,8 +91,6 @@ export default function ChatPage() {
     document.body.classList.add("chat-standalone");
     document.body.classList.add("bg-app");
     document.body.classList.remove("bg-auth");
-    document.documentElement.style.setProperty("--chat-bg", `url("${ASSETS.BG_CHAT}")`);
-    document.documentElement.style.setProperty("--app-bg", `url("${ASSETS.BG_CHAT}")`);
     return () => {
       document.body.classList.remove("chat-standalone");
       document.body.classList.remove("bg-app");
@@ -103,7 +101,6 @@ export default function ChatPage() {
     if (isStandalone) return;
     document.body.classList.add("bg-app");
     document.body.classList.remove("bg-auth");
-    document.documentElement.style.setProperty("--app-bg", `url("${ASSETS.BG_CHAT}")`);
     return () => {
       document.body.classList.remove("bg-app");
     };

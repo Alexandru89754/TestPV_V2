@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ASSETS, ROUTES } from "../lib/config";
+import { ROUTES } from "../lib/config";
 
 const LEARN_SECTIONS = [
   { id: "clinical-cases", label: "Clinical Cases" },
@@ -75,8 +75,6 @@ export default function HomePage() {
   useEffect(() => {
     document.body.classList.add("bg-app");
     document.body.classList.remove("bg-auth");
-    document.documentElement.style.setProperty("--dashboard-bg", `url("${ASSETS.BG_CHAT}")`);
-    document.documentElement.style.setProperty("--app-bg", `url("${ASSETS.BG_CHAT}")`);
     return () => {
       document.body.classList.remove("bg-app");
     };
