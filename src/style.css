@@ -508,6 +508,21 @@ body.chat-standalone {
   gap: 12px;
 }
 
+.profile-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.profile-summary p {
+  color: #d1d5db;
+}
+
+.profile-actions {
+  display: flex;
+  gap: 12px;
+}
+
 .profile-form input,
 .profile-form textarea,
 .comment-input input,
