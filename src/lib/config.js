@@ -46,7 +46,7 @@ export const API_ENDPOINTS = {
 
   PROFILE_ME: apiUrl("/profiles/me"),
   PROFILE_UPDATE: apiUrl("/profiles/me"),
-  PROFILE_AVATAR_UPLOAD: apiUrl("/profiles/me/avatar"),
+  PROFILE_AVATAR_UPLOAD: apiUrl("/api/profile/me/avatar"),
   PROFILE: apiUrl("/api/profile"),
   PROFILE_BY_ID_PREFIX: apiUrl("/api/profile/"),
 
