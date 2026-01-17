@@ -1,23 +1,30 @@
 import { useEffect, useMemo, useState } from "react";
 import { DEBUG } from "../lib/config";
 import { getToken, getUserEmail } from "../lib/session";
-import { getMyProfile, updateMyProfile } from "../lib/client";
+import {
+  getMyProfile,
+  updateMyProfile,
+  updateMyProfileMultipart,
+  uploadAvatar,
+} from "../lib/client";
 
 const USERNAME_REGEX = /^[a-zA-Z0-9_]{3,20}$/;
 const MAX_AVATAR_SIZE = 5 * 1024 * 1024;
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState({ username: "", bio: "", avatarUrl: "" });
+  const [draft, setDraft] = useState({ username: "", bio: "", avatarUrl: "" });
   const [avatarFile, setAvatarFile] = useState(null);
   const [status, setStatus] = useState({ state: "idle", message: "" });
   const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
 
   const previewUrl = useMemo(() => {
     if (avatarFile) {
       return URL.createObjectURL(avatarFile);
     }
-    return profile.avatarUrl || "";
-  }, [avatarFile, profile.avatarUrl]);
+    return draft.avatarUrl || "";
+  }, [avatarFile, draft.avatarUrl]);
 
   useEffect(() => {
     return () => {
@@ -32,16 +39,18 @@ export default function ProfilePage() {
       try {
         const token = getToken();
         const userId = getUserEmail();
-        if (!userId) {
-          setStatus({ state: "error", message: "Utilisateur introuvable. Veuillez vous reconnecter." });
+        if (!token) {
+          setStatus({ state: "error", message: "Session expirée. Veuillez vous reconnecter." });
           return;
         }
         const data = await getMyProfile({ token, userId });
-        setProfile({
+        const nextProfile = {
           username: data?.username || "",
           bio: data?.bio || "",
           avatarUrl: data?.avatar_url || data?.avatarUrl || "",
-        });
+        };
+        setProfile(nextProfile);
+        setDraft(nextProfile);
       } catch (error) {
         setStatus({ state: "error", message: error.message || "Erreur lors du chargement." });
       } finally {
@@ -53,8 +62,8 @@ export default function ProfilePage() {
   }, []);
 
   const validateAvatar = (file) => {
-    if (!file.type.startsWith("image/")) {
-      return "Le fichier doit être une image.";
+    if (!["image/png", "image/jpeg"].includes(file.type)) {
+      return "Le fichier doit être un PNG ou un JPG.";
     }
     if (file.size > MAX_AVATAR_SIZE) {
       return "L’image dépasse 5 Mo.";
@@ -80,20 +89,22 @@ export default function ProfilePage() {
     }
   };
 
-  const readAvatarBase64 = (file) =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const result = typeof reader.result === "string" ? reader.result : "";
-        const [, base64 = ""] = result.split(",");
-        resolve(base64);
-      };
-      reader.onerror = () => reject(new Error("Erreur lors de la lecture de l’image."));
-      reader.readAsDataURL(file);
-    });
+  const startEditing = () => {
+    setDraft(profile);
+    setAvatarFile(null);
+    setIsEditing(true);
+    setStatus({ state: "idle", message: "" });
+  };
+
+  const cancelEditing = () => {
+    setDraft(profile);
+    setAvatarFile(null);
+    setIsEditing(false);
+    setStatus({ state: "idle", message: "" });
+  };
 
   const handleSave = async () => {
-    if (!USERNAME_REGEX.test(profile.username)) {
+    if (!USERNAME_REGEX.test(draft.username)) {
       setStatus({
         state: "error",
         message: "Le username doit contenir 3 à 20 caractères (lettres, chiffres, _).",
@@ -105,39 +116,61 @@ export default function ProfilePage() {
     try {
       const token = getToken();
       const userId = getUserEmail();
-      if (!userId) {
-        setStatus({ state: "error", message: "Utilisateur introuvable. Veuillez vous reconnecter." });
+      if (!token) {
+        setStatus({ state: "error", message: "Session expirée. Veuillez vous reconnecter." });
         return;
       }
-      let avatarUrl = profile.avatarUrl;
-      let avatarBase64 = "";
+      let avatarUrl = draft.avatarUrl;
+      let updated = null;
+      let responseStatus = 200;
 
       if (avatarFile) {
-        avatarBase64 = await readAvatarBase64(avatarFile);
+        try {
+          const upload = await uploadAvatar({ token, file: avatarFile });
+          avatarUrl = upload?.avatar_url || upload?.avatarUrl || avatarUrl;
+        } catch (error) {
+          if ([404, 405, 415].includes(error?.status)) {
+            const multipartResponse = await updateMyProfileMultipart({
+              token,
+              userId,
+              profile: { username: draft.username, bio: draft.bio },
+              avatarFile,
+            });
+            updated = multipartResponse?.data;
+            responseStatus = multipartResponse?.status || 200;
+          } else {
+            throw error;
+          }
+        }
       }
 
-      const { data: updated, status: responseStatus } = await updateMyProfile({
-        token,
-        userId,
-        profile: {
-          user_id: userId,
-          username: profile.username,
-          bio: profile.bio,
-          avatar_url: avatarUrl || undefined,
-          avatar_base64: avatarBase64 || undefined,
-        },
-      });
+      if (!updated) {
+        const response = await updateMyProfile({
+          token,
+          userId,
+          profile: {
+            username: draft.username,
+            bio: draft.bio,
+            avatar_url: avatarUrl || undefined,
+          },
+        });
+        updated = response?.data;
+        responseStatus = response?.status || 200;
+      }
 
       if (DEBUG) {
         console.warn("[DEBUG] profile save status", responseStatus);
       }
 
-      setProfile({
-        username: updated?.username || profile.username,
-        bio: updated?.bio || profile.bio,
+      const nextProfile = {
+        username: updated?.username || draft.username,
+        bio: updated?.bio || draft.bio,
         avatarUrl: updated?.avatar_url || updated?.avatarUrl || avatarUrl,
-      });
+      };
+      setProfile(nextProfile);
+      setDraft(nextProfile);
       setAvatarFile(null);
+      setIsEditing(false);
       setStatus({ state: "success", message: "Profil enregistré." });
     } catch (error) {
       console.error("[DEBUG] profile save error", {
@@ -152,17 +185,32 @@ export default function ProfilePage() {
     <section className="app-panel">
       <div className="panel-header">
         <div>
-          <h2>Mon profil</h2>
-          <p>Mettez à jour votre avatar, username et bio.</p>
+          <h2>{isEditing ? "Modifier le profil" : "Mon profil"}</h2>
+          <p>
+            {isEditing
+              ? "Mettez à jour votre avatar, username et bio."
+              : "Consultez les informations de votre profil."}
+          </p>
         </div>
-        <button className="btn-primary" onClick={handleSave} disabled={status.state === "loading"}>
-          Enregistrer
-        </button>
+        {isEditing && (
+          <div className="profile-actions">
+            <button
+              className="btn-secondary"
+              onClick={cancelEditing}
+              disabled={status.state === "loading"}
+            >
+              Annuler
+            </button>
+            <button className="btn-primary" onClick={handleSave} disabled={status.state === "loading"}>
+              Enregistrer
+            </button>
+          </div>
+        )}
       </div>
 
       {loading ? (
         <p className="status-text">Chargement du profil...</p>
-      ) : (
+      ) : isEditing ? (
         <div className="profile-grid">
           <div className="profile-card">
             <div
@@ -180,7 +228,7 @@ export default function ProfilePage() {
                 Parcourir
                 <input
                   type="file"
-                  accept="image/*"
+                  accept="image/png,image/jpeg"
                   hidden
                   onChange={(event) => {
                     const file = event.target.files?.[0];
@@ -197,8 +245,8 @@ export default function ProfilePage() {
             <label htmlFor="username">Username</label>
             <input
               id="username"
-              value={profile.username}
-              onChange={(event) => setProfile({ ...profile, username: event.target.value })}
+              value={draft.username}
+              onChange={(event) => setDraft({ ...draft, username: event.target.value })}
               placeholder="ex: med_student"
             />
 
@@ -206,8 +254,8 @@ export default function ProfilePage() {
             <textarea
               id="bio"
               rows={4}
-              value={profile.bio}
-              onChange={(event) => setProfile({ ...profile, bio: event.target.value })}
+              value={draft.bio}
+              onChange={(event) => setDraft({ ...draft, bio: event.target.value })}
               placeholder="Parlez de vous..."
             />
 
@@ -220,18 +268,32 @@ export default function ProfilePage() {
                   <div className="avatar-placeholder small">Aucun avatar</div>
                 )}
                 <div>
-                  <p className="preview-username">{profile.username || "Votre username"}</p>
-                  <p className="preview-bio">{profile.bio || "Votre bio apparaîtra ici."}</p>
+                  <p className="preview-username">{draft.username || "Votre username"}</p>
+                  <p className="preview-bio">{draft.bio || "Votre bio apparaîtra ici."}</p>
                 </div>
               </div>
             </div>
-
-            {status.message && (
-              <p className={`status-text ${status.state}`}>{status.message}</p>
+          </div>
+        </div>
+      ) : (
+        <div className="profile-grid">
+          <div className="profile-card">
+            {profile.avatarUrl ? (
+              <img src={profile.avatarUrl} alt="Avatar" className="avatar-preview" />
+            ) : (
+              <div className="avatar-placeholder">Aucun avatar</div>
             )}
+          </div>
+          <div className="profile-summary">
+            <h3>{profile.username || "Username non défini"}</h3>
+            <p>{profile.bio || "Bio non renseignée."}</p>
+            <button className="btn-primary" onClick={startEditing}>
+              Modifier
+            </button>
           </div>
         </div>
       )}
+      {status.message && <p className={`status-text ${status.state}`}>{status.message}</p>}
     </section>
   );
 }
