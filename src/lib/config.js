@@ -56,6 +56,7 @@ export const API_ENDPOINTS = {
   FRIEND_REQUEST_PREFIX: apiUrl("/friends/request/"),
   FRIEND_ACCEPT_PREFIX: apiUrl("/friends/accept/"),
   FRIEND_DECLINE_PREFIX: apiUrl("/friends/decline/"),
+  USER_SEARCH: apiUrl("/api/users/search"),
 
   FORUM_POSTS_WITH_COUNTS: apiUrl("/forum/posts_with_counts"),
   FORUM_POSTS: apiUrl("/forum/posts"),

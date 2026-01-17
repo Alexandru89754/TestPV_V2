@@ -579,6 +579,11 @@ body.chat-standalone {
   margin-bottom: 16px;
 }
 
+.friends-results {
+  display: grid;
+  gap: 12px;
+}
+
 .friend-card {
   display: flex;
   gap: 16px;
@@ -586,6 +591,16 @@ body.chat-standalone {
   background: rgba(255, 255, 255, 0.05);
   padding: 16px;
   border-radius: 14px;
+}
+
+.friend-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  display: grid;
+  place-items: center;
 }
 
 .friend-avatar img {
@@ -664,12 +679,25 @@ body.chat-standalone {
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.1);
   overflow: hidden;
+  display: grid;
+  place-items: center;
 }
 
 .avatar-circle img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.avatar-fallback {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  color: #9ca3af;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
 }
 
 .avatar-circle.small {

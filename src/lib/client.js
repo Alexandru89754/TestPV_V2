@@ -71,6 +71,11 @@ export async function searchUserByEmail({ token, email }) {
   return httpJson(url, { token });
 }
 
+export async function searchUsers({ token, query }) {
+  const url = `${API_ENDPOINTS.USER_SEARCH}?q=${encodeURIComponent(query)}`;
+  return httpJson(url, { token });
+}
+
 export async function sendFriendRequest({ token, userId }) {
   return httpJson(`${API_ENDPOINTS.FRIEND_REQUEST_PREFIX}${userId}`, {
     method: "POST",
