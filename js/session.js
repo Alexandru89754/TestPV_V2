@@ -58,7 +58,6 @@
         });
       }
     } catch {
-      // ignore logout errors
     } finally {
       clearSession({ clearAll });
       window.location.href = redirectTo;

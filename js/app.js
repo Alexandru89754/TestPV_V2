@@ -11,7 +11,7 @@ function initAppPage() {
     `url("${C.ASSETS.BG_CHAT}")`
   );
 
-  /* NAV */
+  
   const buttons = document.querySelectorAll(".nav-btn");
   const sections = document.querySelectorAll(".section");
 
@@ -26,14 +26,12 @@ function initAppPage() {
   });
   showSection(localStorage.getItem(C.STORAGE_KEYS.ACTIVE_TAB) || "chat");
 
-  /* LOGOUT */
+  
   document.getElementById("logout-btn").onclick = async () => {
     await session.logout({ redirectTo: C.ROUTES.LOGIN_PAGE, clearAll: true });
   };
 
-  /* ======================
-   CHAT
-====================== */
+  
   const chatBox = document.getElementById("chat-box");
   const input = document.getElementById("chat-input");
   const sendBtn = document.getElementById("send-btn");
@@ -95,7 +93,7 @@ function initAppPage() {
     }
   };
 
-  /* FORUM */
+  
   const postsList = document.getElementById("posts-list");
   const commentsList = document.getElementById("comments-list");
   const commentInput = document.getElementById("comment-input");
@@ -166,9 +164,7 @@ function initAppPage() {
 
   loadPosts();
 
-  /* ======================
-   FIN DE L’ACTIVITÉ
-====================== */
+  
   const endChatBtn = document.getElementById("end-chat-btn");
 
   if (endChatBtn) {
@@ -197,7 +193,7 @@ function initAppPage() {
         history = [];
         localStorage.setItem(CHAT_KEY, JSON.stringify(history));
         renderChat();
-        alert("Activité terminée et sauvegardée ✅");
+        alert("Activité terminée et sauvegardée.");
       } catch (err) {
         alert("Erreur lors de la sauvegarde.");
       }

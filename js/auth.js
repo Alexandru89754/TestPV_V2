@@ -16,7 +16,7 @@ function initLoginPage() {
   const tabLogin = document.getElementById("tab-login");
   const tabRegister = document.getElementById("tab-register");
 
-  let mode = "login"; // "login" | "register"
+  let mode = "login";
 
   function setMode(nextMode) {
     mode = nextMode;

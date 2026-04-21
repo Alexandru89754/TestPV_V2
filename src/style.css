@@ -1,6 +1,4 @@
-/* =========================
-   BASE
-========================= */
+
 :root {
   color-scheme: light;
   font-family: "Inter", "SF Pro Text", "Segoe UI", system-ui, sans-serif;
@@ -58,9 +56,6 @@ body.bg-app {
   background: transparent;
 }
 
-/* =========================
-   APP SHELL
-========================= */
 .app-shell {
   display: grid;
   grid-template-columns: 260px 1fr;
@@ -81,9 +76,6 @@ body.bg-app {
   z-index: 0;
 }
 
-/* =========================
-   BACKGROUND LOGIN
-========================= */
 .login-bg {
   position: fixed;
   inset: 0;
@@ -121,9 +113,6 @@ body.bg-app {
   text-align: center;
 }
 
-/* =========================
-   LANDING PAGE
-========================= */
 .landing-page {
   position: relative;
   z-index: 2;
@@ -1129,9 +1118,6 @@ body.chat-standalone {
   }
 }
 
-/* =========================
-   DASHBOARD
-========================= */
 .dashboard-shell {
   display: grid;
   grid-template-columns: 260px 1fr;

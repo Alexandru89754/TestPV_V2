@@ -236,7 +236,7 @@ export default function AppPage() {
       });
 
       setChatHistory([]);
-      alert("Activité terminée et sauvegardée ✅");
+      alert("Activité terminée et sauvegardée.");
     } catch {
       alert("Erreur lors de la sauvegarde.");
     }
