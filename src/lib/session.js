@@ -46,7 +46,6 @@ export async function logout({ redirectTo = ROUTES.LOGIN_PAGE, clearAll = true, 
       await httpJson(API_ENDPOINTS.AUTH_LOGOUT, { method: "POST", token });
     }
   } catch {
-    // ignore logout errors
   } finally {
     clearSession({ clearAll });
     if (typeof navigate === "function") {

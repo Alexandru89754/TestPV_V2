@@ -160,9 +160,7 @@ function initChatPage() {
     window.location.href = C.ROUTES.LOGIN_PAGE;
   });
 
-  /* =========================
-     CAMERA (facultatif)
-     ========================= */
+  
 
   let stream = null;
   let recorder = null;

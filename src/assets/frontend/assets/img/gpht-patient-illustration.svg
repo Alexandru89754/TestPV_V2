@@ -14,35 +14,35 @@
     </filter>
   </defs>
 
-  <!-- Soft halo -->
+  
   <g opacity="0.25">
     <circle cx="390" cy="360" r="220" fill="#EAF6FF"/>
     <circle cx="390" cy="360" r="160" fill="#F2FBFF"/>
   </g>
 
-  <!-- Character (rounded, friendly, not rigid) -->
+  
   <g filter="url(#soft)">
-    <!-- Body -->
+    
     <path d="M245 615C245 540 292 470 375 470C458 470 505 540 505 615V660C505 684 486 703 462 703H288C264 703 245 684 245 660V615Z" fill="url(#shirt)"/>
-    <!-- Neck -->
+    
     <path d="M350 430C350 410 366 394 386 394H404C424 394 440 410 440 430V470C440 495 420 515 395 515C370 515 350 495 350 470V430Z" fill="#FFD7C2"/>
-    <!-- Head -->
+    
     <path d="M300 320C300 260 344 216 404 216C464 216 508 260 508 320V350C508 414 460 462 404 462C348 462 300 414 300 350V320Z" fill="#FFE2D2"/>
-    <!-- Hair (soft cap) -->
+    
     <path d="M308 322C308 258 352 214 408 214C462 214 502 254 502 314C484 304 452 300 408 300C362 300 332 306 308 322Z" fill="#233046" opacity="0.92"/>
-    <!-- Face details -->
+    
     <circle cx="372" cy="344" r="8" fill="#233046" opacity="0.85"/>
     <circle cx="436" cy="344" r="8" fill="#233046" opacity="0.85"/>
     <path d="M382 382C395 392 413 392 426 382" stroke="#233046" stroke-opacity="0.35" stroke-width="8" stroke-linecap="round"/>
-    <!-- Cheeks -->
+    
     <circle cx="350" cy="372" r="12" fill="#FFB6A6" opacity="0.28"/>
     <circle cx="458" cy="372" r="12" fill="#FFB6A6" opacity="0.28"/>
 
-    <!-- Arms (rounded) -->
+    
     <path d="M225 560C220 520 244 488 282 488C312 488 336 510 340 540L350 625C353 650 334 672 309 675C281 679 252 666 245 635L225 560Z" fill="#FFE2D2"/>
     <path d="M535 560C540 520 516 488 478 488C448 488 424 510 420 540L410 625C407 650 426 672 451 675C479 679 508 666 515 635L535 560Z" fill="#FFE2D2"/>
 
-    <!-- Clipboard (simple, rounded) -->
+    
     <g transform="translate(420 510)">
       <rect x="0" y="0" width="170" height="210" rx="22" fill="#FFFFFF" opacity="0.95"/>
       <rect x="36" y="18" width="98" height="22" rx="11" fill="url(#accent)" opacity="0.22"/>
@@ -52,7 +52,7 @@
       <circle cx="140" cy="26" r="10" fill="url(#accent)" opacity="0.28"/>
     </g>
 
-    <!-- Small accent badge (health-tech hint, minimal) -->
+    
     <g transform="translate(292 520)" opacity="0.9">
       <rect x="0" y="0" width="92" height="34" rx="17" fill="#FFFFFF"/>
       <circle cx="20" cy="17" r="8" fill="#2EE59D" opacity="0.9"/>

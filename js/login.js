@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const form = document.querySelector(".login-form");
   const submitBtn = document.querySelector(".login-btn");
 
-  let mode = "login"; // login | register
+  let mode = "login";
 
   function switchMode(newMode) {
     mode = newMode;
@@ -19,7 +19,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Initialisation
   tabs[0].dataset.mode = "login";
   tabs[1].dataset.mode = "register";
   switchMode("login");
